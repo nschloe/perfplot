@@ -9,6 +9,12 @@ from perfplot.__about__ import (
         __status__
         )
 
+import pipdated
+if pipdated.needs_checking('perfplot'):
+    msg = pipdated.check('perfplot', __version__)
+    if msg:
+        print(msg)
+
 
 def show(
         setup, kernels, labels, n_range,
