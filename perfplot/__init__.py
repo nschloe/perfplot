@@ -2,7 +2,7 @@
 #
 from perfplot.__about__ import (
         __author__,
-        __email__,
+        __author_email__,
         __copyright__,
         __license__,
         __version__,
