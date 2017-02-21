@@ -12,6 +12,18 @@ from perfplot.__about__ import (
 
 def show(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
     from matplotlib import pyplot as plt
+    _plot(
+        setup, kernels, labels, n_range,
+        xlabel=xlabel,
+        repeat=repeat,
+        number=number
+        )
+    plt.show()
+    return
+
+
+def _plot(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
+    from matplotlib import pyplot as plt
     import numpy
     import timeit
 
@@ -35,5 +47,4 @@ def show(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
         plt.xlabel(xlabel)
     plt.ylabel('Time in seconds')
     plt.legend()
-    plt.show()
     return
