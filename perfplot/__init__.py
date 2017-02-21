@@ -11,7 +11,6 @@ from perfplot.__about__ import (
 
 
 def show(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
-    # import inspect
     from matplotlib import pyplot as plt
     import numpy
     import timeit
