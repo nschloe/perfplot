@@ -3,17 +3,20 @@ import perfplot
 
 
 def test():
+    setup = lambda n: numpy.random.rand(n)
+    kernels = [lambda a: numpy.c_[a, a]]
+    r = [2**k for k in range(4)]
+    perfplot.show(setup, kernels, labels=['c_'], n_range=r, xlabel='len(a)')
     perfplot.show(
-            setup=lambda n: numpy.random.rand(n),
-            kernels=[
-                lambda a: numpy.c_[a, a],
-                lambda a: numpy.stack([a, a]).T,
-                lambda a: numpy.vstack([a, a]).T,
-                lambda a: numpy.column_stack([a, a]),
-                lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1)
-                ],
-            labels=['c_', 'stack', 'vstack', 'column_stack', 'concat'],
-            n_range=[2**k for k in range(15)],
-            xlabel='len(a)'
+            setup, kernels, labels=['c_'], n_range=r, xlabel='len(a)',
+            logx=True, logy=False
+            )
+    perfplot.show(
+            setup, kernels, labels=['c_'], n_range=r, xlabel='len(a)',
+            logx=False, logy=True
+            )
+    perfplot.show(
+            setup, kernels, labels=['c_'], n_range=r, xlabel='len(a)',
+            logx=True, logy=True
             )
     return
