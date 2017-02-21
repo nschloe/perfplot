@@ -3,7 +3,7 @@ import perfplot
 
 
 def test():
-    perfplot._plot(
+    perfplot.show(
             setup=lambda n: numpy.random.rand(n),
             kernels=[
                 lambda a: numpy.c_[a, a],
