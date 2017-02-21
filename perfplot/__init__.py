@@ -22,7 +22,14 @@ def show(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
     return
 
 
-def _plot(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
+def _plot(
+        setup, kernels, labels, n_range,
+        xlabel=None,
+        repeat=5,
+        number=100,
+        logx=False,
+        logy=False,
+        ):
     from matplotlib import pyplot as plt
     import numpy
     import timeit
@@ -38,11 +45,20 @@ def _plot(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
                 )
     timings /= number
 
-    # plot minimum
+    # choose plot function
+    if logx and logy:
+        plotfun = plt.loglog
+    elif logx:
+        plotfun = plt.semilogx
+    elif logy:
+        plotfun = plt.semilogy
+    else:
+        plotfun = plt.plot
+    # plot minimum time
     x = n_range
     T = numpy.min(timings, axis=2)
     for t, label in zip(T, labels):
-        plt.plot(x, t, label=label)
+        plotfun(x, t, label=label)
     if xlabel:
         plt.xlabel(xlabel)
     plt.ylabel('Time in seconds')
