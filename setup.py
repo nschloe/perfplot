@@ -48,8 +48,5 @@ setup(
         'Programming Language :: Python :: 3',
         'Topic :: Software Development',
         'Topic :: Utilities'
-        ],
-    scripts=[
-        'tools/perfplot'
         ]
     )
