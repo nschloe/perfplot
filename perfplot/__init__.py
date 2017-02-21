@@ -10,13 +10,22 @@ from perfplot.__about__ import (
         )
 
 
-def show(setup, kernels, labels, n_range, xlabel=None, repeat=5, number=100):
+def show(
+        setup, kernels, labels, n_range,
+        xlabel=None,
+        repeat=5,
+        number=100,
+        logx=False,
+        logy=False
+        ):
     from matplotlib import pyplot as plt
     _plot(
         setup, kernels, labels, n_range,
         xlabel=xlabel,
         repeat=repeat,
-        number=number
+        number=number,
+        logx=logx,
+        logy=logy
         )
     plt.show()
     return
