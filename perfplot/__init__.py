@@ -22,7 +22,8 @@ def show(
         repeat=5,
         number=100,
         logx=False,
-        logy=False
+        logy=False,
+        automatic_order=True
         ):
     from matplotlib import pyplot as plt
     _plot(
@@ -31,7 +32,8 @@ def show(
         repeat=repeat,
         number=number,
         logx=logx,
-        logy=logy
+        logy=logy,
+        automatic_order=automatic_order
         )
     plt.show()
     return
@@ -44,6 +46,7 @@ def _plot(
         number=100,
         logx=False,
         logy=False,
+        automatic_order=True,
         ):
     from matplotlib import pyplot as plt
     import numpy
@@ -72,6 +75,14 @@ def _plot(
     # plot minimum time
     x = n_range
     T = numpy.min(timings, axis=2)
+
+    if automatic_order:
+        # Sort T by the last entry. This makes the order in the legend
+        # correspond to the order of the lines.
+        order = numpy.argsort(T[:, -1])[::-1]
+        T = T[order]
+        labels = [labels[i] for i in order]
+
     for t, label in zip(T, labels):
         plotfun(x, t, label=label)
     if xlabel:
