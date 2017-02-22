@@ -19,8 +19,7 @@ if pipdated.needs_checking('perfplot'):
 def show(
         setup, kernels, labels, n_range,
         xlabel=None,
-        repeat=5,
-        number=100,
+        repeat=100,
         logx=False,
         logy=False,
         automatic_order=True
@@ -30,7 +29,6 @@ def show(
         setup, kernels, labels, n_range,
         xlabel=xlabel,
         repeat=repeat,
-        number=number,
         logx=logx,
         logy=logy,
         automatic_order=automatic_order
@@ -42,8 +40,7 @@ def show(
 def _plot(
         setup, kernels, labels, n_range,
         xlabel=None,
-        repeat=5,
-        number=100,
+        repeat=100,
         logx=False,
         logy=False,
         automatic_order=True,
@@ -52,16 +49,35 @@ def _plot(
     import numpy
     import timeit
 
+    # Estimate the timer granularity by measuring a no-op.
+    noop_time = timeit.repeat(stmt=lambda: None, repeat=10, number=100)
+    granularity = max(noop_time) / 100
+
     timings = numpy.empty((len(kernels), len(n_range), repeat))
     for k, kernel in enumerate(kernels):
         for i, n in enumerate(n_range):
             out = setup(n)
-            timings[k, i] = timeit.repeat(
-                stmt=lambda: kernel(out),
-                repeat=repeat,
-                number=number
-                )
-    timings /= number
+            # Make sure that the statement is executed at least so often that
+            # the timing exceeds 1000 times the granularity of the clock.
+            number = 1
+            required_timing = 1000 * granularity
+            min_timing = 0.0
+            while min_timing <= required_timing:
+                timings[k, i] = timeit.repeat(
+                    stmt=lambda: kernel(out),
+                    repeat=repeat,
+                    number=number
+                    )
+                min_timing = min(timings[k, i])
+                timings[k, i] /= number
+                # Adapt the number of runs for the next iteration. It needs to
+                # be such that the required_timing is just exceeded.
+                if min_timing < 1.0e-10:
+                    factor = 100
+                else:
+                    allowance = 0.2
+                    factor = required_timing / min_timing + allowance
+                number = int(factor * number) + 1
 
     # choose plot function
     if logx and logy:
