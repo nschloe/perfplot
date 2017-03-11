@@ -16,29 +16,16 @@ if pipdated.needs_checking('perfplot'):
         print(msg)
 
 
-def show(
-        setup, kernels, labels, n_range,
-        xlabel=None,
-        repeat=100,
-        logx=False,
-        logy=False,
-        automatic_order=True
-        ):
+def show(*args, **kwargs):
     from matplotlib import pyplot as plt
-    _plot(
-        setup, kernels, labels, n_range,
-        xlabel=xlabel,
-        repeat=repeat,
-        logx=logx,
-        logy=logy,
-        automatic_order=automatic_order
-        )
+    _plot(*args, **kwargs)
     plt.show()
     return
 
 
 def _plot(
-        setup, kernels, labels, n_range,
+        setup, kernels, n_range,
+        labels=None,
         xlabel=None,
         repeat=100,
         logx=False,
@@ -91,6 +78,9 @@ def _plot(
     # plot minimum time
     x = n_range
     T = numpy.min(timings, axis=2)
+
+    if labels is None:
+        labels = [k.func_name for k in kernels]
 
     if automatic_order:
         # Sort T by the last entry. This makes the order in the legend
