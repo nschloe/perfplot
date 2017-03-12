@@ -38,6 +38,7 @@ setup(
         'matplotlib',
         'numpy',
         'pipdated',
+        'tqdm',
         ],
     classifiers=[
         about['__status__'],

@@ -35,14 +35,15 @@ def _plot(
     from matplotlib import pyplot as plt
     import numpy
     import timeit
+    from tqdm import tqdm
 
     # Estimate the timer granularity by measuring a no-op.
     noop_time = timeit.repeat(stmt=lambda: None, repeat=10, number=100)
     granularity = max(noop_time) / 100
 
     timings = numpy.empty((len(kernels), len(n_range), repeat))
-    for k, kernel in enumerate(kernels):
-        for i, n in enumerate(n_range):
+    for k, kernel in enumerate(tqdm(kernels)):
+        for i, n in enumerate(tqdm(n_range)):
             out = setup(n)
             # Make sure that the statement is executed at least so often that
             # the timing exceeds 1000 times the granularity of the clock.
