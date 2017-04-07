@@ -10,10 +10,8 @@ from perfplot.__about__ import (
         )
 
 import pipdated
-if pipdated.needs_checking('perfplot'):
-    msg = pipdated.check('perfplot', __version__)
-    if msg:
-        print(msg)
+if pipdated.needs_checking(__name__):
+    print(pipdated.check(__name__, __version__))
 
 
 def show(*args, **kwargs):
