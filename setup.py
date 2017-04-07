@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 import codecs
 
 # https://packaging.python.org/single_source_version/
@@ -27,7 +27,7 @@ setup(
     version=about['__version__'],
     author=about['__author__'],
     author_email=about['__author_email__'],
-    packages=['perfplot'],
+    packages=find_packages(),
     description='Performance plots for small Python code snippets',
     long_description=read('README.rst'),
     url='https://github.com/nschloe/perfplot',
