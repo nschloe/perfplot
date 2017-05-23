@@ -17,7 +17,7 @@ def _plot(
         logx=False,
         logy=False,
         automatic_order=True,
-        correctness_check=None
+        correctness_check=lambda a, b: a == b
         ):
     from matplotlib import pyplot as plt
     import numpy
