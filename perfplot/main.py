@@ -17,6 +17,7 @@ def _plot(
         logx=False,
         logy=False,
         automatic_order=True,
+        correctness_check=None
         ):
     from matplotlib import pyplot as plt
     import numpy
@@ -28,9 +29,13 @@ def _plot(
     granularity = max(noop_time) / 100
 
     timings = numpy.empty((len(kernels), len(n_range), repeat))
-    for k, kernel in enumerate(tqdm(kernels)):
-        for i, n in enumerate(tqdm(n_range)):
-            out = setup(n)
+    for i, n in enumerate(tqdm(n_range)):
+        out = setup(n)
+        if correctness_check:
+            reference = kernels[0](out)
+        for k, kernel in enumerate(tqdm(kernels)):
+            if correctness_check:
+                assert correctness_check(reference, kernel(out))
             # Make sure that the statement is executed at least so often that
             # the timing exceeds 1000 times the granularity of the clock.
             number = 1
