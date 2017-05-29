@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 #
+import matplotlib.pyplot as plt
+import numpy
+import timeit
+from tqdm import tqdm
 
 
 def show(*args, **kwargs):
-    from matplotlib import pyplot as plt
     _plot(*args, **kwargs)
     plt.show()
     return
@@ -17,13 +20,8 @@ def _plot(
         logx=False,
         logy=False,
         automatic_order=True,
-        correctness_check=lambda a, b: a == b
+        equality_check=lambda a, b: numpy.equal(a, b).all()
         ):
-    from matplotlib import pyplot as plt
-    import numpy
-    import timeit
-    from tqdm import tqdm
-
     # Estimate the timer granularity by measuring a no-op.
     noop_time = timeit.repeat(stmt=lambda: None, repeat=10, number=100)
     granularity = max(noop_time) / 100
@@ -31,11 +29,11 @@ def _plot(
     timings = numpy.empty((len(kernels), len(n_range), repeat))
     for i, n in enumerate(tqdm(n_range)):
         out = setup(n)
-        if correctness_check:
+        if equality_check:
             reference = kernels[0](out)
         for k, kernel in enumerate(tqdm(kernels)):
-            if correctness_check:
-                assert correctness_check(reference, kernel(out))
+            if equality_check:
+                assert equality_check(reference, kernel(out))
             # Make sure that the statement is executed at least so often that
             # the timing exceeds 1000 times the granularity of the clock.
             number = 1
