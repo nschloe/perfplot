@@ -9,6 +9,7 @@
 perfplot extends Python's very own
 [timeit](https://docs.python.org/2/library/timeit.html) by testing snippets
 with input parameters (e.g., the size of an array) and plotting the results.
+(By default, perfplot asserts the equality of the output of all snippets, too.)
 
 For example, to compare different NumPy array concatenation methods, the script
 ```python
