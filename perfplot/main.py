@@ -20,7 +20,7 @@ def _plot(
         logx=False,
         logy=False,
         automatic_order=True,
-        equality_check=lambda a, b: numpy.equal(a, b).all()
+        equality_check=numpy.allclose
         ):
     # Estimate the timer granularity by measuring a no-op.
     noop_time = timeit.repeat(stmt=lambda: None, repeat=10, number=100)
