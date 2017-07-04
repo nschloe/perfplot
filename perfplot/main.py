@@ -70,7 +70,7 @@ def _plot(
     T = numpy.min(timings, axis=2)
 
     if labels is None:
-        labels = [k.func_name for k in kernels]
+        labels = [k.__name__ for k in kernels]
 
     if automatic_order:
         # Sort T by the last entry. This makes the order in the legend
