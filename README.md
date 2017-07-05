@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/nschloe/perfplot.svg?branch=master)](https://travis-ci.org/nschloe/perfplot)
 [![codecov](https://codecov.io/gh/nschloe/perfplot/branch/master/graph/badge.svg)](https://codecov.io/gh/nschloe/perfplot)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.python.org/pypi/perfplot)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=social&label=Star&maxAge=2592000)](https://github.com/nschloe/perfplot)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=social&label=Stars&maxAge=2592000)](https://github.com/nschloe/perfplot)
 
 perfplot extends Python's very own
 [timeit](https://docs.python.org/2/library/timeit.html) by testing snippets
