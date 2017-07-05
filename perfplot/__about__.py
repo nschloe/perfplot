@@ -4,5 +4,5 @@ __author__ = u'Nico Schlömer'
 __author_email__ = 'nico.schloemer@gmail.com'
 __copyright__ = 'Copyright (c) 2017, %s <%s>' % (__author__, __author_email__)
 __license__ = 'License :: OSI Approved :: MIT License'
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 __status__ = 'Development Status :: 4 - Beta'

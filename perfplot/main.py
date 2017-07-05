@@ -48,12 +48,10 @@ def _plot(
                 min_timing = min(timings[k, i])
                 timings[k, i] /= number
                 # Adapt the number of runs for the next iteration. It needs to
-                # be such that the required_timing is just exceeded.
-                if min_timing < 1.0e-10:
-                    factor = 100
-                else:
-                    allowance = 0.2
-                    factor = required_timing / min_timing + allowance
+                # be such that the required_timing is just exceeded. If the
+                # required timing and minimal timing are just equal, `number`
+                # remains the same (up to an allowance of 0.2).
+                factor = min(100, required_timing / min_timing + 0.2)
                 number = int(factor * number) + 1
 
     # choose plot function
