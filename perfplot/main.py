@@ -82,5 +82,6 @@ def _plot(
     if xlabel:
         plt.xlabel(xlabel)
     plt.ylabel('Time in seconds')
+    plt.grid(True)
     plt.legend()
     return
