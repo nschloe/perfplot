@@ -37,7 +37,7 @@ setup(
     install_requires=[
         'matplotlib',
         'numpy',
-        'pipdated',
+        'pipdate',
         'tqdm',
         ],
     classifiers=[
