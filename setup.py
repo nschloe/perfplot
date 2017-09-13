@@ -28,7 +28,7 @@ setup(
     author=about['__author__'],
     author_email=about['__author_email__'],
     packages=find_packages(),
-    description='Performance plots for small Python code snippets',
+    description='Performance plots for Python code snippets',
     long_description=read('README.rst'),
     url='https://github.com/nschloe/perfplot',
     download_url='https://pypi.python.org/pypi/perfplot',
