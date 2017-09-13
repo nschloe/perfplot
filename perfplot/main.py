@@ -54,7 +54,16 @@ def _plot(
                 # required_timing is just exceeded. If the required timing and
                 # minimal timing are just equal, `number` remains the same (up
                 # to an allowance of 0.2).
-                factor = min(100, required_timing / min_timing + 0.2)
+                allowance = 0.2
+                max_factor = 100
+                # The next expression is
+                #   min(max_factor, required_timing / min_timing + allowance)
+                # with avoiding division by 0 if min_timing is too small.
+                factor = (
+                    required_timing / min_timing + allowance
+                    if min_timing > required_timing / (max_factor - allowance)
+                    else max_factor
+                    )
                 number = int(factor * number) + 1
 
     # choose plot function
