@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 #
+import timeit
+
 import matplotlib.pyplot as plt
 import numpy
-import timeit
 from tqdm import tqdm
 
 
@@ -12,6 +13,7 @@ def show(*args, **kwargs):
     return
 
 
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches
 def _plot(
         setup, kernels, n_range,
         labels=None,
@@ -41,16 +43,17 @@ def _plot(
             min_timing = 0.0
             while min_timing <= required_timing:
                 timings[k, i] = timeit.repeat(
+                    # pylint: disable=cell-var-from-loop
                     stmt=lambda: kernel(out),
                     repeat=repeat,
                     number=number
                     )
                 min_timing = min(timings[k, i])
                 timings[k, i] /= number
-                # Adapt the number of runs for the next iteration. It needs to
-                # be such that the required_timing is just exceeded. If the
-                # required timing and minimal timing are just equal, `number`
-                # remains the same (up to an allowance of 0.2).
+                # Adapt the number of runs for the next iteration such that the
+                # required_timing is just exceeded. If the required timing and
+                # minimal timing are just equal, `number` remains the same (up
+                # to an allowance of 0.2).
                 factor = min(100, required_timing / min_timing + 0.2)
                 number = int(factor * number) + 1
 
