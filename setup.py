@@ -7,7 +7,7 @@ import codecs
 # https://packaging.python.org/single_source_version/
 base_dir = os.path.abspath(os.path.dirname(__file__))
 about = {}
-with open(os.path.join(base_dir, 'perfplot', '__about__.py')) as f:
+with open(os.path.join(base_dir, 'perfplot', '__about__.py'), 'rb') as f:
     exec(f.read(), about)
 
 
@@ -28,7 +28,7 @@ setup(
     author=about['__author__'],
     author_email=about['__author_email__'],
     packages=find_packages(),
-    description='Performance plots for small Python code snippets',
+    description='Performance plots for Python code snippets',
     long_description=read('README.rst'),
     url='https://github.com/nschloe/perfplot',
     download_url='https://pypi.python.org/pypi/perfplot',
@@ -37,7 +37,7 @@ setup(
     install_requires=[
         'matplotlib',
         'numpy',
-        'pipdated',
+        'pipdate',
         'tqdm',
         ],
     classifiers=[

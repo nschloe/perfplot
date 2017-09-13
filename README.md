@@ -16,7 +16,7 @@ import numpy
 import perfplot
 
 perfplot.show(
-        setup=lambda n: numpy.random.rand(n),
+        setup=numpy.random.rand,
         kernels=[
             lambda a: numpy.c_[a, a],
             lambda a: numpy.stack([a, a]).T,
@@ -40,19 +40,11 @@ Clearly, `stack` and `vstack` are the best options for large arrays!
 #### Python Package Index
 
 perfplot is [available from the Python Package
-Index](https://pypi.python.org/pypi/perfplot/), so simply type
+Index](https://pypi.python.org/pypi/perfplot/), so simply do
 ```
 pip install -U perfplot
 ```
 to install or upgrade.
-
-#### Manual installation
-
-Download perfplot from [GitHub](https://github.com/nschloe/perfplot) and
-install it with
-```
-python setup.py install
-```
 
 ### Testing
 

@@ -13,13 +13,15 @@ addons:
       - python3-numpy
 
 before_install:
-  - pip install pytest pytest-cov code_extract
+  - pip install pytest pytest-cov code_extract pylint
   - code_extract README.md test/readme_test.py --filter python
 
 install:
   - pip install .
 
 script:
+  - pylint perfplot
+  - pylint test/*.py
   - cd test && MPLBACKEND=Agg pytest --cov perfplot
 
 after_success:
