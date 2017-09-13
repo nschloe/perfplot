@@ -25,8 +25,8 @@ def _plot(
         equality_check=numpy.allclose
         ):
     # Estimate the timer granularity by measuring a no-op.
-    noop_time = timeit.repeat(stmt='pass', repeat=10, number=100)
-    granularity = max(noop_time) / 100
+    noop_time = timeit.repeat(repeat=10, number=100)
+    granularity = min(noop_time) / 100
 
     timings = numpy.empty((len(kernels), len(n_range), repeat))
     for i, n in enumerate(tqdm(n_range)):
