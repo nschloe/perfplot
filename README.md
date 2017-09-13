@@ -16,7 +16,7 @@ import numpy
 import perfplot
 
 perfplot.show(
-        setup=lambda n: numpy.random.rand(n),
+        setup=numpy.random.rand,
         kernels=[
             lambda a: numpy.c_[a, a],
             lambda a: numpy.stack([a, a]).T,
