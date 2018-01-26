@@ -1,10 +1,5 @@
 VERSION=$(shell python -c "import perfplot; print(perfplot.__version__)")
 
-# Make sure we're on the master branch
-ifneq "$(shell git rev-parse --abbrev-ref HEAD)" "master"
-$(error Not on master branch)
-endif
-
 default:
 	@echo "\"make publish\"?"
 
@@ -13,12 +8,14 @@ README.rst: README.md
 	python setup.py check -r -s || exit 1
 
 upload: setup.py README.rst
+	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "master" ]; then exit 1; fi
 	rm -f dist/*
 	python setup.py bdist_wheel --universal
 	gpg --detach-sign -a dist/*
 	twine upload dist/*
 
 tag:
+	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "master" ]; then exit 1; fi
 	@echo "Tagging v$(VERSION)..."
 	git tag v$(VERSION)
 	git push --tags
