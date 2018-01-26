@@ -47,6 +47,7 @@ def test_save():
     perfplot.save(
             'out.png',
             setup=numpy.random.rand,
-            kernels=kernels, n_range=r, xlabel='len(a)'
+            kernels=kernels, n_range=r,
+            xlabel='len(a)', title='mytest'
             )
     return

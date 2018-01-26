@@ -24,6 +24,7 @@ def plot(
         setup, kernels, n_range,
         labels=None,
         xlabel=None,
+        title=None,
         repeat=100,
         logx=False,
         logy=False,
@@ -103,6 +104,8 @@ def plot(
         plotfun(x, t, label=label)
     if xlabel:
         plt.xlabel(xlabel)
+    if title:
+        plt.title(title)
     plt.ylabel('Time in seconds')
     plt.grid(True)
     plt.legend()
