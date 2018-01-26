@@ -37,8 +37,6 @@ Clearly, `stack` and `vstack` are the best options for large arrays!
 
 ### Installation
 
-#### Python Package Index
-
 perfplot is [available from the Python Package
 Index](https://pypi.python.org/pypi/perfplot/), so simply do
 ```
