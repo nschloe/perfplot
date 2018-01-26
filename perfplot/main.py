@@ -13,6 +13,12 @@ def show(*args, **kwargs):
     return
 
 
+def save(filename, *args, **kwargs):
+    plot(*args, **kwargs)
+    plt.savefig(filename, transparent=True)
+    return
+
+
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
 def plot(
         setup, kernels, n_range,
