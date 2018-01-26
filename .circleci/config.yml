@@ -1,0 +1,26 @@
+version: 2
+
+jobs:
+
+  build:
+    working_directory: ~/perfplot
+    docker:
+      - image: ubuntu:17.10
+    steps:
+      - run: apt-get update
+      - run: apt-get install -y git python3-pip
+      - run: pip3 install -U pytest pytest-cov pylint
+      - checkout
+      - run: pip3 install .
+      # make sure that rst converts correctly
+      - run: apt install -y pandoc
+      - run: pip3 install docutils pygments
+      - run: make README.rst
+      - run: python3 setup.py check -r -s
+      # The actual test
+      - run: pylint perfplot/
+      - run: pylint test/*.py
+      - run: cd test/ && pytest --cov perfplot
+      # submit to codecov
+      - run: apt-get install -y curl
+      - run: bash <(curl -s https://codecov.io/bash)
