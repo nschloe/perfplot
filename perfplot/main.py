@@ -8,13 +8,13 @@ from tqdm import tqdm
 
 
 def show(*args, **kwargs):
-    _plot(*args, **kwargs)
+    plot(*args, **kwargs)
     plt.show()
     return
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
-def _plot(
+def plot(
         setup, kernels, n_range,
         labels=None,
         xlabel=None,
@@ -49,6 +49,10 @@ def _plot(
                     number=number
                     )
                 min_timing = min(timings[k, i])
+                # print(timings[k, i])
+                # plt.semilogy(range(len(timings[k, i])), timings[k, i])
+                # plt.hist(timings[k, i])
+                # plt.show()
                 timings[k, i] /= number
                 # Adapt the number of runs for the next iteration such that the
                 # required_timing is just exceeded. If the required timing and
