@@ -107,7 +107,7 @@ def plot(
         prop_cycle = plt.rcParams['axes.prop_cycle']
         colors = prop_cycle.by_key()['color'][:len(labels)]
 
-    for t, label, colors in zip(T, labels, colors):
+    for t, label, color in zip(T, labels, colors):
         plotfun(x, t, label=label, color=color)
     if xlabel:
         plt.xlabel(xlabel)
