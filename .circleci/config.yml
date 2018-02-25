@@ -18,8 +18,7 @@ jobs:
       - run: make README.rst
       - run: python3 setup.py check -r -s
       # The actual test
-      - run: pylint perfplot/
-      - run: pylint test/*.py
+      - run: pylint setup.py perfplot/ test/*.py
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
       # submit to codecov
       - run: apt-get install -y curl
