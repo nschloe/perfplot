@@ -94,16 +94,17 @@ def plot(setup, kernels, n_range,
     x = n_range
     T = numpy.min(timings, axis=2)
 
+    if colors is None:
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colors = prop_cycle.by_key()['color'][:len(labels)]
+
     if automatic_order:
         # Sort T by the last entry. This makes the order in the legend
         # correspond to the order of the lines.
         order = numpy.argsort(T[:, -1])[::-1]
         T = T[order]
         labels = [labels[i] for i in order]
-
-    if colors is None:
-        prop_cycle = plt.rcParams['axes.prop_cycle']
-        colors = prop_cycle.by_key()['color'][:len(labels)]
+        colors = [colors[i] for i in order]
 
     for t, label, color in zip(T, labels, colors):
         plotfun(x, t, label=label, color=color)
