@@ -20,18 +20,16 @@ def save(filename, *args, **kwargs):
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
-def plot(
-        setup, kernels, n_range,
-        labels=None,
-        colors=None,
-        xlabel=None,
-        title=None,
-        repeat=100,
-        logx=False,
-        logy=False,
-        automatic_order=True,
-        equality_check=numpy.allclose
-        ):
+def plot(setup, kernels, n_range,
+         labels=None,
+         colors=None,
+         xlabel=None,
+         title=None,
+         repeat=100,
+         logx=False,
+         logy=False,
+         automatic_order=True,
+         equality_check=numpy.allclose):
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
