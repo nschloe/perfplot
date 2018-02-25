@@ -5,7 +5,7 @@ jobs:
   build:
     working_directory: ~/perfplot
     docker:
-      - image: ubuntu:17.10
+      - image: ubuntu:18.04
     steps:
       - run: apt-get update
       - run: apt-get install -y git python3-pip
