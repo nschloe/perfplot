@@ -31,6 +31,9 @@ def plot(
         automatic_order=True,
         equality_check=numpy.allclose
         ):
+    if labels is None:
+        labels = [k.__name__ for k in kernels]
+
     # Estimate the timer granularity by measuring a no-op.
     noop_time = timeit.repeat(repeat=10, number=100)
     granularity = min(noop_time) / 100
@@ -42,7 +45,9 @@ def plot(
             reference = kernels[0](out)
         for k, kernel in enumerate(tqdm(kernels)):
             if equality_check:
-                assert equality_check(reference, kernel(out))
+                assert equality_check(reference, kernel(out)), \
+                    'Equality check fail. ({}, {})' \
+                    .format(labels[0], labels[k])
             # Make sure that the statement is executed at least so often that
             # the timing exceeds 1000 times the granularity of the clock.
             number = 1
@@ -89,9 +94,6 @@ def plot(
     # plot minimum time
     x = n_range
     T = numpy.min(timings, axis=2)
-
-    if labels is None:
-        labels = [k.__name__ for k in kernels]
 
     if automatic_order:
         # Sort T by the last entry. This makes the order in the legend
