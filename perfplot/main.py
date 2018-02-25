@@ -23,6 +23,7 @@ def save(filename, *args, **kwargs):
 def plot(
         setup, kernels, n_range,
         labels=None,
+        colors=None,
         xlabel=None,
         title=None,
         repeat=100,
@@ -102,8 +103,12 @@ def plot(
         T = T[order]
         labels = [labels[i] for i in order]
 
-    for t, label in zip(T, labels):
-        plotfun(x, t, label=label)
+    if colors is None:
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colors = prop_cycle.by_key()['color'][:len(labels)]
+
+    for t, label, colors in zip(T, labels, colors):
+        plotfun(x, t, label=label, color=color)
     if xlabel:
         plt.xlabel(xlabel)
     if title:
