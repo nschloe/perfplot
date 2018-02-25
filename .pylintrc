@@ -1,7 +1,6 @@
 [MESSAGES CONTROL]
 
 disable=
-  bad-continuation,
   invalid-name,
   missing-docstring,
   no-member,

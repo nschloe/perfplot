@@ -1,7 +1,8 @@
 # perfplot
 
-[![Build Status](https://travis-ci.org/nschloe/perfplot.svg?branch=master)](https://travis-ci.org/nschloe/perfplot)
+[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg)](https://codecov.io/gh/nschloe/perfplot)
+[![Codacy grade](https://img.shields.io/codacy/grade/32994ce499db42059777d42edcfce900.svg)](https://app.codacy.com/app/nschloe/perfplot/dashboard)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.python.org/pypi/perfplot)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=social&label=Stars)](https://github.com/nschloe/perfplot)
 
