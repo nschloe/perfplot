@@ -1,7 +1,6 @@
 version: 2
 
 jobs:
-
   build:
     working_directory: ~/perfplot
     docker:
@@ -12,11 +11,6 @@ jobs:
       - run: pip3 install -U pytest pytest-cov pylint
       - checkout
       - run: pip3 install .
-      # make sure that rst converts correctly
-      - run: apt install -y pandoc
-      - run: pip3 install docutils pygments
-      - run: make README.rst
-      - run: python3 setup.py check -r -s
       # The actual test
       - run: pylint setup.py perfplot/ test/*.py
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
