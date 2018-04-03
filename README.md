@@ -3,8 +3,8 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg)](https://codecov.io/gh/nschloe/perfplot)
 [![Codacy grade](https://img.shields.io/codacy/grade/32994ce499db42059777d42edcfce900.svg)](https://app.codacy.com/app/nschloe/perfplot/dashboard)
-[![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.python.org/pypi/perfplot)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=social&label=Stars)](https://github.com/nschloe/perfplot)
+[![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.org/project/perfplot)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?logo=github&label=Stars)](https://github.com/nschloe/perfplot)
 
 perfplot extends Python's
 [timeit](https://docs.python.org/3/library/timeit.html) by testing snippets
@@ -48,7 +48,7 @@ Other examples:
 ### Installation
 
 perfplot is [available from the Python Package
-Index](https://pypi.python.org/pypi/perfplot/), so simply do
+Index](https://pypi.org/project/perfplot/), so simply do
 ```
 pip install -U perfplot
 ```

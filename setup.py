@@ -14,14 +14,7 @@ with open(os.path.join(base_dir, 'perfplot', '__about__.py'), 'rb') as f:
 
 
 def read(fname):
-    try:
-        content = codecs.open(
-            os.path.join(os.path.dirname(__file__), fname),
-            encoding='utf-8'
-            ).read()
-    except IOError:
-        content = ''
-    return content
+    return codecs.open(os.path.join(base_dir, fname), encoding='utf-8').read()
 
 
 setup(
@@ -31,9 +24,12 @@ setup(
     author_email=about['__author_email__'],
     packages=find_packages(),
     description='Performance plots for Python code snippets',
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     url='https://github.com/nschloe/perfplot',
-    download_url='https://pypi.python.org/pypi/perfplot',
+    project_urls={
+        'Issues': 'https://github.com/nschloe/perfplot/issues',
+        },
     license=about['__license__'],
     platforms='any',
     install_requires=[
