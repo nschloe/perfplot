@@ -7,29 +7,85 @@ import numpy
 from tqdm import tqdm
 
 
-def show(*args, **kwargs):
-    plot(*args, **kwargs)
-    plt.show()
-    return
+class PerfplotData(object):
+    # pylint: disable=too-many-arguments
+    def __init__(self, n_range, T,
+                 labels,
+                 colors,
+                 xlabel,
+                 title,
+                 logx,
+                 logy,
+                 automatic_order):
+        self.n_range = n_range
+        self.T = T
+        self.labels = labels
 
+        self.colors = colors
+        if self.colors is None:
+            prop_cycle = plt.rcParams['axes.prop_cycle']
+            self.colors = prop_cycle.by_key()['color'][:len(self.labels)]
 
-def save(filename, *args, **kwargs):
-    plot(*args, **kwargs)
-    plt.savefig(filename, transparent=True)
-    return
+        self.xlabel = xlabel
+        self.title = title
+
+        # choose plot function
+        if logx and logy:
+            self.plotfun = plt.loglog
+        elif logx:
+            self.plotfun = plt.semilogx
+        elif logy:
+            self.plotfun = plt.semilogy
+        else:
+            self.plotfun = plt.plot
+
+        if automatic_order:
+            # Sort T by the last entry. This makes the order in the legend
+            # correspond to the order of the lines.
+            order = numpy.argsort(self.T[:, -1])[::-1]
+            self.T = self.T[order]
+            self.labels = [self.labels[i] for i in order]
+            self.colors = [self.colors[i] for i in order]
+        return
+
+    def plot(self):
+        for t, label, color in zip(self.T, self.labels, self.colors):
+            self.plotfun(self.n_range, t, label=label, color=color)
+        if self.xlabel:
+            plt.xlabel(self.xlabel)
+        if self.title:
+            plt.title(self.title)
+        plt.ylabel('Time in seconds')
+        plt.grid(True)
+        plt.legend()
+        return
+
+    def show(self):
+        self.plot()
+        plt.show()
+        return
+
+    def save(self, filename, transparent=True):
+        self.plot()
+        plt.savefig(filename, transparent=transparent)
+        return
+
+    def __repr__(self):
+        import pandas
+        return pandas.DataFrame(self.T.T, self.n_range, self.labels).to_string()
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
-def plot(setup, kernels, n_range,
-         labels=None,
-         colors=None,
-         xlabel=None,
-         title=None,
-         repeat=100,
-         logx=False,
-         logy=False,
-         automatic_order=True,
-         equality_check=numpy.allclose):
+def bench(setup, kernels, n_range,
+          labels=None,
+          colors=None,
+          xlabel=None,
+          title=None,
+          repeat=100,
+          logx=False,
+          logy=False,
+          automatic_order=True,
+          equality_check=numpy.allclose):
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
@@ -81,38 +137,19 @@ def plot(setup, kernels, n_range,
                     )
                 number = int(factor * number) + 1
 
-    # choose plot function
-    if logx and logy:
-        plotfun = plt.loglog
-    elif logx:
-        plotfun = plt.semilogx
-    elif logy:
-        plotfun = plt.semilogy
-    else:
-        plotfun = plt.plot
-    # plot minimum time
-    x = n_range
+    # Only report the minimum time; everthing else just measures how slow the
+    # system can go.
     T = numpy.min(timings, axis=2)
 
-    if colors is None:
-        prop_cycle = plt.rcParams['axes.prop_cycle']
-        colors = prop_cycle.by_key()['color'][:len(labels)]
-
-    if automatic_order:
-        # Sort T by the last entry. This makes the order in the legend
-        # correspond to the order of the lines.
-        order = numpy.argsort(T[:, -1])[::-1]
-        T = T[order]
-        labels = [labels[i] for i in order]
-        colors = [colors[i] for i in order]
-
-    for t, label, color in zip(T, labels, colors):
-        plotfun(x, t, label=label, color=color)
-    if xlabel:
-        plt.xlabel(xlabel)
-    if title:
-        plt.title(title)
-    plt.ylabel('Time in seconds')
-    plt.grid(True)
-    plt.legend()
-    return
+    data = PerfplotData(
+        n_range,
+        T,
+        labels,
+        colors,
+        xlabel,
+        title,
+        logx,
+        logy,
+        automatic_order
+        )
+    return data

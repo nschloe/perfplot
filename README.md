@@ -16,7 +16,7 @@ For example, to compare different NumPy array concatenation methods, the script
 import numpy
 import perfplot
 
-perfplot.show(
+out = perfplot.bench(
     setup=numpy.random.rand,
     kernels=[
         lambda a: numpy.c_[a, a],
@@ -29,6 +29,8 @@ perfplot.show(
     n_range=[2**k for k in range(15)],
     xlabel='len(a)'
     )
+out.show()
+out.save('perf.png')
 ```
 produces
 
