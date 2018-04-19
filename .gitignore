@@ -4,3 +4,5 @@ dist/
 README.rst
 build/
 *.png
+.pytest_cache/
+.coverage
