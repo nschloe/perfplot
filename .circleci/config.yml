@@ -10,7 +10,7 @@ jobs:
       - run: apt-get install -y git python3-pip
       - run: pip3 install -U pytest pytest-cov pylint
       - checkout
-      - run: pip3 install .
+      - run: pip3 install .[all]
       # The actual test
       - run: pylint setup.py perfplot/ test/*.py
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
