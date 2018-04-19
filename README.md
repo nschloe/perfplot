@@ -16,7 +16,7 @@ For example, to compare different NumPy array concatenation methods, the script
 import numpy
 import perfplot
 
-out = perfplot.bench(
+perfplot.show(
     setup=numpy.random.rand,
     kernels=[
         lambda a: numpy.c_[a, a],
@@ -29,14 +29,22 @@ out = perfplot.bench(
     n_range=[2**k for k in range(15)],
     xlabel='len(a)'
     )
-out.show()
-out.save('perf.png')
 ```
 produces
 
 ![](https://nschloe.github.io/perfplot/concat.png)
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
+
+Benchmarking and plotting can be separated, too. This allows multiple plots of
+the same data, for example:
+```python
+out = perfplot.bench(
+    # same arguments as above
+    )
+out.show()
+out.save('perf.png')
+```
 
 Other examples:
 
