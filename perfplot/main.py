@@ -153,3 +153,15 @@ def bench(setup, kernels, n_range,
         automatic_order
         )
     return data
+
+
+# For backward compatibility:
+def plot(*args, **kwargs):
+    out = bench(*args, **kwargs)
+    out.plot()
+    return
+
+def show(*args, **kwargs):
+    out = bench(*args, **kwargs)
+    out.show()
+    return
