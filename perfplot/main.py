@@ -8,54 +8,49 @@ from tqdm import tqdm
 
 
 class PerfplotData(object):
-    def __init__(self, n_range, timings,
+    # pylint: disable=too-many-arguments
+    def __init__(self, n_range, T,
                  labels,
                  colors,
                  xlabel,
                  title,
-                 repeat,
                  logx,
                  logy,
                  automatic_order):
         self.n_range = n_range
-        self.timings = timings
+        self.T = T
         self.labels = labels
+
         self.colors = colors
+        if self.colors is None:
+            prop_cycle = plt.rcParams['axes.prop_cycle']
+            self.colors = prop_cycle.by_key()['color'][:len(self.labels)]
+
         self.xlabel = xlabel
         self.title = title
-        self.logx = logx
-        self.logy = logy
-        self.automatic_order = automatic_order
+
+        # choose plot function
+        if logx and logy:
+            self.plotfun = plt.loglog
+        elif logx:
+            self.plotfun = plt.semilogx
+        elif logy:
+            self.plotfun = plt.semilogy
+        else:
+            self.plotfun = plt.plot
+
+        if automatic_order:
+            # Sort T by the last entry. This makes the order in the legend
+            # correspond to the order of the lines.
+            order = numpy.argsort(self.T[:, -1])[::-1]
+            self.T = self.T[order]
+            self.labels = [self.labels[i] for i in order]
+            self.colors = [self.colors[i] for i in order]
         return
 
     def plot(self):
-        # choose plot function
-        if self.logx and self.logy:
-            plotfun = plt.loglog
-        elif self.logx:
-            plotfun = plt.semilogx
-        elif self.logy:
-            plotfun = plt.semilogy
-        else:
-            plotfun = plt.plot
-        # plot minimum time
-        x = self.n_range
-        T = numpy.min(self.timings, axis=2)
-
-        if self.colors is None:
-            prop_cycle = plt.rcParams['axes.prop_cycle']
-            colors = prop_cycle.by_key()['color'][:len(self.labels)]
-
-        if self.automatic_order:
-            # Sort T by the last entry. This makes the order in the legend
-            # correspond to the order of the lines.
-            order = numpy.argsort(T[:, -1])[::-1]
-            T = T[order]
-            self.labels = [self.labels[i] for i in order]
-            colors = [colors[i] for i in order]
-
-        for t, label, color in zip(T, self.labels, colors):
-            plotfun(x, t, label=label, color=color)
+        for t, label, color in zip(self.T, self.labels, self.colors):
+            self.plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
@@ -70,9 +65,9 @@ class PerfplotData(object):
         plt.show()
         return
 
-    def save(self, filename):
+    def save(self, filename, transparent=True):
         self.plot()
-        plt.savefig(filename, transparent=True)
+        plt.savefig(filename, transparent=transparent)
         return
 
 
@@ -138,14 +133,17 @@ def bench(setup, kernels, n_range,
                     )
                 number = int(factor * number) + 1
 
+    # Only report the minimum time; everthing else just measures how slow the
+    # system can go.
+    T = numpy.min(timings, axis=2)
+
     data = PerfplotData(
         n_range,
-        timings,
+        T,
         labels,
         colors,
         xlabel,
         title,
-        repeat,
         logx,
         logy,
         automatic_order
