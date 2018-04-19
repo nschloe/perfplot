@@ -35,6 +35,10 @@ setup(
         'pipdate',
         'tqdm',
         ],
+    extras_require={
+        'all': ['pandas'],
+        'print': ['pandas'],
+        },
     classifiers=[
         about['__status__'],
         about['__license__'],

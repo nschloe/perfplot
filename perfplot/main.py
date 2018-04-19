@@ -70,6 +70,10 @@ class PerfplotData(object):
         plt.savefig(filename, transparent=transparent)
         return
 
+    def __repr__(self):
+        import pandas
+        return pandas.DataFrame(self.T.T, self.n_range, self.labels).to_string()
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
 def bench(setup, kernels, n_range,
