@@ -32,7 +32,7 @@ setup(
     install_requires=[
         'matplotlib',
         'numpy',
-        'pipdate',
+        'pipdate >=0.2.0, <0.3.0',
         'tqdm',
         ],
     extras_require={
