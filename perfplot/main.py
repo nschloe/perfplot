@@ -169,3 +169,9 @@ def show(*args, **kwargs):
     out = bench(*args, **kwargs)
     out.show()
     return
+
+
+def save(filename, *args, **kwargs):
+    out = bench(*args, **kwargs)
+    out.save(filename)
+    return
