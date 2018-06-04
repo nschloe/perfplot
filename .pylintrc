@@ -1,6 +1,0 @@
-[MESSAGES CONTROL]
-
-disable=
-  invalid-name,
-  missing-docstring,
-  no-member,
