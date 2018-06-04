@@ -8,8 +8,8 @@ from perfplot.__about__ import (
     __copyright__,
     __license__,
     __version__,
-    __status__
-    )
+    __status__,
+)
 
 # pylint: disable=wildcard-import
 from perfplot.main import *
@@ -20,4 +20,4 @@ except ImportError:
     pass
 else:
     if pipdate.needs_checking(__name__):
-        print(pipdate.check(__name__, __version__), end='')
+        print(pipdate.check(__name__, __version__), end="")

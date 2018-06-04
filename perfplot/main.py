@@ -9,22 +9,17 @@ from tqdm import tqdm
 
 class PerfplotData(object):
     # pylint: disable=too-many-arguments
-    def __init__(self, n_range, T,
-                 labels,
-                 colors,
-                 xlabel,
-                 title,
-                 logx,
-                 logy,
-                 automatic_order):
+    def __init__(
+        self, n_range, T, labels, colors, xlabel, title, logx, logy, automatic_order
+    ):
         self.n_range = n_range
         self.T = T
         self.labels = labels
 
         self.colors = colors
         if self.colors is None:
-            prop_cycle = plt.rcParams['axes.prop_cycle']
-            self.colors = prop_cycle.by_key()['color'][:len(self.labels)]
+            prop_cycle = plt.rcParams["axes.prop_cycle"]
+            self.colors = prop_cycle.by_key()["color"][: len(self.labels)]
 
         self.xlabel = xlabel
         self.title = title
@@ -55,7 +50,7 @@ class PerfplotData(object):
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        plt.ylabel('Time in seconds')
+        plt.ylabel("Time in seconds")
         plt.grid(True)
         plt.legend()
         return
@@ -72,20 +67,25 @@ class PerfplotData(object):
 
     def __repr__(self):
         import pandas
+
         return pandas.DataFrame(self.T.T, self.n_range, self.labels).to_string()
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
-def bench(setup, kernels, n_range,
-          labels=None,
-          colors=None,
-          xlabel=None,
-          title=None,
-          repeat=100,
-          logx=False,
-          logy=False,
-          automatic_order=True,
-          equality_check=numpy.allclose):
+def bench(
+    setup,
+    kernels,
+    n_range,
+    labels=None,
+    colors=None,
+    xlabel=None,
+    title=None,
+    repeat=100,
+    logx=False,
+    logy=False,
+    automatic_order=True,
+    equality_check=numpy.allclose,
+):
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
@@ -101,9 +101,9 @@ def bench(setup, kernels, n_range,
                 reference = kernels[0](out)
             for k, kernel in enumerate(tqdm(kernels)):
                 if equality_check:
-                    assert equality_check(reference, kernel(out)), \
-                        'Equality check fail. ({}, {})' \
-                        .format(labels[0], labels[k])
+                    assert equality_check(
+                        reference, kernel(out)
+                    ), "Equality check fail. ({}, {})".format(labels[0], labels[k])
                 # Make sure that the statement is executed at least so often that
                 # the timing exceeds 1000 times the granularity of the clock.
                 number = 1
@@ -114,8 +114,8 @@ def bench(setup, kernels, n_range,
                         # pylint: disable=cell-var-from-loop
                         stmt=lambda: kernel(out),
                         repeat=repeat,
-                        number=number
-                        )
+                        number=number,
+                    )
                     min_timing = min(timings[k, i])
                     # print(timings[k, i])
                     # plt.semilogy(range(len(timings[k, i])), timings[k, i])
@@ -135,7 +135,7 @@ def bench(setup, kernels, n_range,
                         required_timing / min_timing + allowance
                         if min_timing > required_timing / (max_factor - allowance)
                         else max_factor
-                        )
+                    )
                     number = int(factor * number) + 1
     except KeyboardInterrupt:
         timings = timings[:, :i]
@@ -146,16 +146,8 @@ def bench(setup, kernels, n_range,
     T = numpy.min(timings, axis=2)
 
     data = PerfplotData(
-        n_range,
-        T,
-        labels,
-        colors,
-        xlabel,
-        title,
-        logx,
-        logy,
-        automatic_order
-        )
+        n_range, T, labels, colors, xlabel, title, logx, logy, automatic_order
+    )
     return data
 
 
@@ -164,6 +156,7 @@ def plot(*args, **kwargs):
     out = bench(*args, **kwargs)
     out.plot()
     return
+
 
 def show(*args, **kwargs):
     out = bench(*args, **kwargs)
