@@ -3,6 +3,7 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg)](https://codecov.io/gh/nschloe/perfplot)
 [![Codacy grade](https://img.shields.io/codacy/grade/32994ce499db42059777d42edcfce900.svg)](https://app.codacy.com/app/nschloe/perfplot/dashboard)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.org/project/perfplot)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?logo=github&label=Stars)](https://github.com/nschloe/perfplot)
 
