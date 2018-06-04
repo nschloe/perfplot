@@ -12,7 +12,7 @@ jobs:
       - checkout
       - run: pip3 install .[all]
       # format & lint
-      - run: black --check setup.py perfplot/ test/*.py
+      - run: LC_ALL=C.UTF-8 black --check setup.py perfplot/ test/*.py
       - run: flake8 setup.py perfplot/ test/*.py
       # The actual test
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
