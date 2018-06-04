@@ -88,15 +88,21 @@ def bench(
     xlabel=None,
     title=None,
     repeat=None,
-    target_time_per_measurement=1.0,
+    target_time_per_measurement=None,
     logx=False,
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
 ):
-    assert (repeat is None and target_time_per_measurement is not None) or (
-        repeat is not None and target_time_per_measurement is None
-    ), "Exactly one of `repeat` and `target_time_per_measurement` needs to specified."
+    if repeat is None:
+        if target_time_per_measurement is None:
+            target_time_per_measurement = 1.0
+    else:
+        assert (
+            target_time_per_measurement is None
+        ), "Only one of `repeat` ({}) and `target_time_per_measurement ({}) can be specified.".format(
+            repeat, target_time_per_measurement
+        )
 
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -108,10 +114,9 @@ def bench(
 
     timings = numpy.empty((len(kernels), len(n_range)))
 
-    if repeat is None:
-        last_repeat = numpy.empty(len(kernels), dtype=int)
-        last_n = numpy.empty(len(kernels), dtype=int)
-        last_total_time = numpy.empty(len(kernels))
+    last_repeat = numpy.empty(len(kernels), dtype=int)
+    last_n = numpy.empty(len(kernels), dtype=int)
+    last_total_time = numpy.empty(len(kernels))
 
     try:
         for i, n in enumerate(tqdm(n_range)):
@@ -148,11 +153,9 @@ def bench(
                     # Fixed number of repeats
                     rp = repeat
 
-                ltt = last_total_time[k]
-                min_time, last_total_time[k] = _b(data, kernel, rp, resolution)
+                timings[k, i], last_total_time[k] = _b(data, kernel, rp, resolution)
                 last_repeat[k] = rp
                 last_n[k] = n
-                timings[k, i] = min_time
 
     except KeyboardInterrupt:
         timings = timings[:, :i]
