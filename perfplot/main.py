@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 
 class PerfplotData(object):
-    # pylint: disable=too-many-arguments
     def __init__(
         self, n_range, T, labels, colors, xlabel, title, logx, logy, automatic_order
     ):
@@ -71,7 +70,6 @@ class PerfplotData(object):
         return pandas.DataFrame(self.T.T, self.n_range, self.labels).to_string()
 
 
-# pylint: disable=too-many-arguments,too-many-locals,too-many-branches
 def bench(
     setup,
     kernels,
@@ -111,10 +109,7 @@ def bench(
                 min_timing = 0.0
                 while min_timing <= required_timing:
                     timings[k, i] = timeit.repeat(
-                        # pylint: disable=cell-var-from-loop
-                        stmt=lambda: kernel(out),
-                        repeat=repeat,
-                        number=number,
+                        stmt=lambda: kernel(out), repeat=repeat, number=number
                     )
                     min_timing = min(timings[k, i])
                     # print(timings[k, i])

@@ -11,7 +11,6 @@ from perfplot.__about__ import (
     __status__,
 )
 
-# pylint: disable=wildcard-import
 from perfplot.main import *
 
 try:
