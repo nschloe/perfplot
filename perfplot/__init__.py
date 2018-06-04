@@ -11,7 +11,20 @@ from perfplot.__about__ import (
     __status__,
 )
 
-from perfplot.main import *
+from perfplot.main import bench, plot, show, save
+
+__all__ = [
+    "__author__",
+    "__author_email__",
+    "__copyright__",
+    "__license__",
+    "__version__",
+    "__status__",
+    "bench",
+    "plot",
+    "show",
+    "save",
+]
 
 try:
     import pipdate
