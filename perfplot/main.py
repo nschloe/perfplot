@@ -9,10 +9,19 @@ from tqdm import tqdm
 
 class PerfplotData(object):
     def __init__(
-        self, n_range, T, labels, colors, xlabel, title, logx, logy, automatic_order
+        self,
+        n_range,
+        timings,
+        labels,
+        colors,
+        xlabel,
+        title,
+        logx,
+        logy,
+        automatic_order,
     ):
         self.n_range = n_range
-        self.T = T
+        self.timings = timings
         self.labels = labels
 
         self.colors = colors
@@ -34,16 +43,16 @@ class PerfplotData(object):
             self.plotfun = plt.plot
 
         if automatic_order:
-            # Sort T by the last entry. This makes the order in the legend
-            # correspond to the order of the lines.
-            order = numpy.argsort(self.T[:, -1])[::-1]
-            self.T = self.T[order]
+            # Sort timings by the last entry. This makes the order in the
+            # legend correspond to the order of the lines.
+            order = numpy.argsort(self.timings[:, -1])[::-1]
+            self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
         return
 
     def plot(self):
-        for t, label, color in zip(self.T, self.labels, self.colors):
+        for t, label, color in zip(self.timings, self.labels, self.colors):
             self.plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
@@ -67,7 +76,7 @@ class PerfplotData(object):
     def __repr__(self):
         import pandas
 
-        return pandas.DataFrame(self.T.T, self.n_range, self.labels).to_string()
+        return pandas.DataFrame(self.timings.T, self.n_range, self.labels).to_string()
 
 
 def bench(
@@ -78,72 +87,106 @@ def bench(
     colors=None,
     xlabel=None,
     title=None,
-    repeat=100,
+    repeat=None,
+    target_time_per_measurement=1.0,
     logx=False,
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
 ):
+    assert (repeat is None and target_time_per_measurement is not None) or (
+        repeat is not None and target_time_per_measurement is None
+    ), "Exactly one of `repeat` and `target_time_per_measurement` needs to specified."
+
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    # Estimate the timer granularity by measuring a no-op.
+    # Estimate the timer resolution by measuring a no-op.
+    # TODO Python 3.7 will feature a nanosecond timer. Use that when available.
     noop_time = timeit.repeat(repeat=10, number=100)
-    granularity = min(noop_time) / 100
+    resolution = numpy.min(noop_time) / 100
 
-    timings = numpy.empty((len(kernels), len(n_range), repeat))
+    timings = numpy.empty((len(kernels), len(n_range)))
+
+    if repeat is None:
+        last_repeat = numpy.empty(len(kernels), dtype=int)
+        last_total_time = numpy.empty(len(kernels))
+
     try:
         for i, n in enumerate(tqdm(n_range)):
-            out = setup(n)
+            data = setup(n)
             if equality_check:
-                reference = kernels[0](out)
+                reference = kernels[0](data)
             for k, kernel in enumerate(tqdm(kernels)):
                 if equality_check:
                     assert equality_check(
-                        reference, kernel(out)
-                    ), "Equality check fail. ({}, {})".format(labels[0], labels[k])
-                # Make sure that the statement is executed at least so often that
-                # the timing exceeds 1000 times the granularity of the clock.
-                number = 1
-                required_timing = 1000 * granularity
-                min_timing = 0.0
-                while min_timing <= required_timing:
-                    timings[k, i] = timeit.repeat(
-                        stmt=lambda: kernel(out), repeat=repeat, number=number
-                    )
-                    min_timing = min(timings[k, i])
-                    # print(timings[k, i])
-                    # plt.semilogy(range(len(timings[k, i])), timings[k, i])
-                    # plt.hist(timings[k, i])
-                    # plt.show()
-                    timings[k, i] /= number
-                    # Adapt the number of runs for the next iteration such that the
-                    # required_timing is just exceeded. If the required timing and
-                    # minimal timing are just equal, `number` remains the same (up
-                    # to an allowance of 0.2).
-                    allowance = 0.2
-                    max_factor = 100
-                    # The next expression is
-                    #   min(max_factor, required_timing / min_timing + allowance)
-                    # with avoiding division by 0 if min_timing is too small.
-                    factor = (
-                        required_timing / min_timing + allowance
-                        if min_timing > required_timing / (max_factor - allowance)
-                        else max_factor
-                    )
-                    number = int(factor * number) + 1
+                        reference, kernel(data)
+                    ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
+
+                if repeat is None:
+                    if i == 0:
+                        # Bootstrap the repeat count and timing
+                        last_repeat[k] = 1
+                        _, last_total_time[k] = _b(data, kernel, last_repeat[k], resolution)
+                    # Set the number of repetitions such that it would hit
+                    # target_time_per_measurement if done again.
+                    rp = last_repeat[k] * target_time_per_measurement / last_total_time[k]
+                    # Round up
+                    rp = -int(-rp // 1)
+                else:
+                    # Fixed number of repeats
+                    rp = repeat
+
+                min_time, last_total_time[k] = _b(data, kernel, rp, resolution)
+                last_repeat[k] = rp
+                timings[k, i] = min_time
+
     except KeyboardInterrupt:
         timings = timings[:, :i]
         n_range = n_range[:i]
 
-    # Only report the minimum time; everthing else just measures how slow the
-    # system can go.
-    T = numpy.min(timings, axis=2)
-
     data = PerfplotData(
-        n_range, T, labels, colors, xlabel, title, logx, logy, automatic_order
+        n_range, timings, labels, colors, xlabel, title, logx, logy, automatic_order
     )
     return data
+
+
+def _b(data, kernel, repeat, resolution):
+    # Make sure that the statement is executed at least so often
+    # that the timing exceeds 1000 times the resolution of the
+    # clock. `number` is larger than 1 only for the fastest
+    # computations. Hardly ever happens.
+    number = 1
+    required_timing = 1000 * resolution
+    min_timing = 0.0
+    while min_timing <= required_timing:
+        tm = numpy.array(timeit.repeat(
+            stmt=lambda: kernel(data), repeat=repeat, number=number
+        ))
+        min_timing = numpy.min(tm)
+        # plt.title("number={} repeat={}".format(number, repeat))
+        # plt.semilogy(tm)
+        # # plt.hist(tm)
+        # plt.show()
+        tm /= number
+        # Adapt the number of runs for the next iteration such that the
+        # required_timing is just exceeded. If the required timing and
+        # minimal timing are just equal, `number` remains the same (up
+        # to an allowance of 0.2).
+        allowance = 0.2
+        max_factor = 100
+        # The next expression is
+        #   min(max_factor, required_timing / min_timing + allowance)
+        # with avoiding division by 0 if min_timing is too small.
+        factor = (
+            required_timing / min_timing + allowance
+            if min_timing > required_timing / (max_factor - allowance)
+            else max_factor
+        )
+        number = int(factor * number) + 1
+    # Only return the minimum time; everthing else just measures
+    # how slow the system can go.
+    return numpy.min(tm), numpy.sum(tm)
 
 
 # For backward compatibility:
