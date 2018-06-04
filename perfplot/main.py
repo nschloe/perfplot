@@ -110,6 +110,7 @@ def bench(
 
     if repeat is None:
         last_repeat = numpy.empty(len(kernels), dtype=int)
+        last_n = numpy.empty(len(kernels), dtype=int)
         last_total_time = numpy.empty(len(kernels))
 
     try:
@@ -127,18 +128,30 @@ def bench(
                     if i == 0:
                         # Bootstrap the repeat count and timing
                         last_repeat[k] = 1
-                        _, last_total_time[k] = _b(data, kernel, last_repeat[k], resolution)
+                        last_n[k] = n
+                        _, last_total_time[k] = _b(
+                            data, kernel, last_repeat[k], resolution
+                        )
                     # Set the number of repetitions such that it would hit
-                    # target_time_per_measurement if done again.
-                    rp = last_repeat[k] * target_time_per_measurement / last_total_time[k]
+                    # target_time_per_measurement if the timing scales linearly
+                    # with n.
+                    rp = (
+                        last_repeat[k]
+                        * target_time_per_measurement
+                        / last_total_time[k]
+                        * last_n[k]
+                        / n
+                    )
                     # Round up
                     rp = -int(-rp // 1)
                 else:
                     # Fixed number of repeats
                     rp = repeat
 
+                ltt = last_total_time[k]
                 min_time, last_total_time[k] = _b(data, kernel, rp, resolution)
                 last_repeat[k] = rp
+                last_n[k] = n
                 timings[k, i] = min_time
 
     except KeyboardInterrupt:
@@ -152,17 +165,16 @@ def bench(
 
 
 def _b(data, kernel, repeat, resolution):
-    # Make sure that the statement is executed at least so often
-    # that the timing exceeds 1000 times the resolution of the
-    # clock. `number` is larger than 1 only for the fastest
-    # computations. Hardly ever happens.
+    # Make sure that the statement is executed at least so often that the
+    # timing exceeds 10 times the resolution of the clock. `number` is larger
+    # than 1 only for the fastest computations. Hardly ever happens.
     number = 1
-    required_timing = 1000 * resolution
+    required_timing = 10 * resolution
     min_timing = 0.0
     while min_timing <= required_timing:
-        tm = numpy.array(timeit.repeat(
-            stmt=lambda: kernel(data), repeat=repeat, number=number
-        ))
+        tm = numpy.array(
+            timeit.repeat(stmt=lambda: kernel(data), repeat=repeat, number=number)
+        )
         min_timing = numpy.min(tm)
         # plt.title("number={} repeat={}".format(number, repeat))
         # plt.semilogy(tm)
