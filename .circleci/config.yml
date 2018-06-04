@@ -8,11 +8,13 @@ jobs:
     steps:
       - run: apt-get update
       - run: apt-get install -y git python3-pip
-      - run: pip3 install -U pytest pytest-cov pylint
+      - run: pip3 install -U pytest pytest-cov black flake8
       - checkout
       - run: pip3 install .[all]
+      # format & lint
+      - run: black --check setup.py perfplot/ test/*.py
+      - run: flake8 setup.py perfplot/ test/*.py
       # The actual test
-      - run: pylint setup.py perfplot/ test/*.py
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
       # submit to codecov
       - run: apt-get install -y curl

@@ -23,4 +23,5 @@ clean:
 	@rm -rf *.egg-info/ build/ dist/
 
 lint:
-	pylint setup.py perfplot/ test/*.py
+	black --check setup.py perfplot/ test/*.py
+	flake8 setup.py perfplot/ test/*.py
