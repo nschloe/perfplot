@@ -84,6 +84,7 @@ def test_no_labels():
 def test_mult_setup():
     def mytest(a):
         return numpy.c_[a, a]
+
     def mytest2(a):
         return numpy.stack([a, a]).T
 
@@ -101,8 +102,9 @@ def test_mult_setup():
     out = perfplot.bench(
         setup=setups, kernels=kernels, n_range=r, xlabel="len(a)", equality_check=None
     )
-    # out.show()
+    out.show()
     return
+
 
 def test_save():
     def mytest(a):
