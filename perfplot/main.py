@@ -118,7 +118,7 @@ def bench(
     last_n = numpy.empty(len(kernels), dtype=int)
     last_total_time = numpy.empty(len(kernels))
 
-    stp_islist = True if isinstance(setup, (list, tuple)) else False
+    stp_islist = isinstance(setup, (list, tuple))
     try:
         for i, n in enumerate(tqdm(n_range)):
             data = setup[0](n) if stp_islist else setup(n)
