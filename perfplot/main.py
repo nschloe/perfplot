@@ -118,12 +118,15 @@ def bench(
     last_n = numpy.empty(len(kernels), dtype=int)
     last_total_time = numpy.empty(len(kernels))
 
+    stp_islist = True if isinstance(setup, (list, tuple)) else False
     try:
         for i, n in enumerate(tqdm(n_range)):
-            data = setup(n)
+            data = setup[0](n) if stp_islist else setup(n)
             if equality_check:
                 reference = kernels[0](data)
             for k, kernel in enumerate(tqdm(kernels)):
+                if stp_islist:
+                    data = setup[k](n)
                 if equality_check:
                     assert equality_check(
                         reference, kernel(data)
