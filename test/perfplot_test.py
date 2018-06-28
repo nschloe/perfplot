@@ -50,23 +50,6 @@ def test():
     return
 
 
-def test_fixed_repeat():
-    kernels = [lambda a: numpy.c_[a, a]]
-    r = [2 ** k for k in range(4)]
-    out = perfplot.bench(
-        setup=numpy.random.rand,
-        kernels=kernels,
-        labels=["c_"],
-        n_range=r,
-        repeat=100,
-        xlabel="len(a)",
-        logx=True,
-        logy=True,
-    )
-    out.show()
-    return
-
-
 def test_no_labels():
     def mytest(a):
         return numpy.c_[a, a]

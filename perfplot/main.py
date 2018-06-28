@@ -88,23 +88,12 @@ def bench(
     colors=None,
     xlabel=None,
     title=None,
-    repeat=None,
-    target_time_per_measurement=None,
+    target_time_per_measurement=1.0,
     logx=False,
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
 ):
-    if repeat is None:
-        if target_time_per_measurement is None:
-            target_time_per_measurement = 1.0
-    else:
-        assert (
-            target_time_per_measurement is None
-        ), "Only one of `repeat` ({}) and `target_time_per_measurement ({}) can be specified.".format(
-            repeat, target_time_per_measurement
-        )
-
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
@@ -120,16 +109,13 @@ def bench(
         resolution = 1  # ns
     else:
         # Estimate the timer resolution by measuring a no-op.
-        noop_time = timeit.repeat(repeat=10, number=100, timer=timer)
-        resolution = numpy.min(noop_time) / 100 * 1.0e+9
+        number = 100
+        noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
+        resolution = numpy.min(noop_time) / number * 1.0e+9
         # round up to nearest integer
-        resolution = -int(-resolution // 1)
+        resolution = -int(-resolution // 1)   # typically around 10 (ns)
 
     timings = numpy.empty((len(kernels), len(n_range)), dtype=int)
-
-    last_repeat = numpy.empty(len(kernels), dtype=int)
-    last_n = numpy.empty(len(kernels), dtype=int)
-    last_total_time = numpy.empty(len(kernels), dtype=int)
 
     try:
         for i, n in enumerate(tqdm(n_range)):
@@ -142,34 +128,23 @@ def bench(
                         reference, kernel(data)
                     ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
 
-                if repeat is None:
-                    if i == 0:
-                        # Bootstrap the repeat count and timing
-                        last_repeat[k] = 1
-                        last_n[k] = n
-                        _, last_total_time[k] = _b(
-                            data, kernel, last_repeat[k], timer, is_ns_timer, resolution
-                        )
+                # First try with one repetition only. If this doesn't exceed the target
+                # time, append as many repeats as the first measurements suggests.
+                # If the kernel is fast, the measurement with one repetition only can
+                # be somewhat off, but most of the time it's good enough.
+                remaining_time = int(target_time_per_measurement * 1.0e+9)
 
-                    # Set the number of repetitions such that it would hit
-                    # target_time_per_measurement if the timing scales linearly
-                    # with n.
-                    rp = (
-                        last_repeat[k]
-                        * target_time_per_measurement
-                        / last_total_time[k]
-                        * last_n[k]
-                        / n
-                    )
-                    # Round up to nearest integer
-                    rp = -int(-rp // 1)
-                else:
-                    # Fixed number of repeats
-                    rp = repeat
+                repeat = 1
+                t, total_time = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                time_per_repetition = total_time / repeat
 
-                timings[k, i], last_total_time[k] = _b(data, kernel, rp, timer, is_ns_timer, resolution)
-                last_repeat[k] = rp
-                last_n[k] = n
+                remaining_time -= total_time
+                repeat = int(remaining_time // time_per_repetition)
+                if repeat > 0:
+                    t2, _ = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                    t = min(t, t2)
+
+                timings[k, i] = t
 
     except KeyboardInterrupt:
         timings = timings[:, :i]
