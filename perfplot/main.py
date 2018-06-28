@@ -113,7 +113,7 @@ def bench(
         noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
         resolution = numpy.min(noop_time) / number * 1.0e+9
         # round up to nearest integer
-        resolution = -int(-resolution // 1)   # typically around 10 (ns)
+        resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
     timings = numpy.empty((len(kernels), len(n_range)), dtype=int)
 
@@ -165,7 +165,9 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     min_timing = 0
     while min_timing <= required_timing:
         tm = numpy.array(
-            timeit.repeat(stmt=lambda: kernel(data), repeat=repeat, number=number, timer=timer)
+            timeit.repeat(
+                stmt=lambda: kernel(data), repeat=repeat, number=number, timer=timer
+            )
         )
         if not is_ns_timer:
             tm *= 1.0e+9
