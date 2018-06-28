@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 #
+import time
 import timeit
 
 import matplotlib.pyplot as plt
@@ -53,7 +54,7 @@ class PerfplotData(object):
 
     def plot(self):
         for t, label, color in zip(self.timings, self.labels, self.colors):
-            self.plotfun(self.n_range, t, label=label, color=color)
+            self.plotfun(self.n_range, t * 1.0e-9, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
@@ -68,9 +69,9 @@ class PerfplotData(object):
         plt.show()
         return
 
-    def save(self, filename, transparent=True):
+    def save(self, filename, transparent=True, bbox_inches="tight"):
         self.plot()
-        plt.savefig(filename, transparent=transparent)
+        plt.savefig(filename, transparent=transparent, bbox_inches=bbox_inches)
         return
 
     def __repr__(self):
@@ -87,36 +88,34 @@ def bench(
     colors=None,
     xlabel=None,
     title=None,
-    repeat=None,
-    target_time_per_measurement=None,
+    target_time_per_measurement=1.0,
     logx=False,
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
 ):
-    if repeat is None:
-        if target_time_per_measurement is None:
-            target_time_per_measurement = 1.0
-    else:
-        assert (
-            target_time_per_measurement is None
-        ), "Only one of `repeat` ({}) and `target_time_per_measurement ({}) can be specified.".format(
-            repeat, target_time_per_measurement
-        )
-
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    # Estimate the timer resolution by measuring a no-op.
-    # TODO Python 3.7 will feature a nanosecond timer. Use that when available.
-    noop_time = timeit.repeat(repeat=10, number=100)
-    resolution = numpy.min(noop_time) / 100
+    is_ns_timer = False
+    try:
+        timer = time.perf_counter_ns
+    except AttributeError:
+        timer = time.perf_counter
+    else:
+        is_ns_timer = True
 
-    timings = numpy.empty((len(kernels), len(n_range)))
+    if is_ns_timer:
+        resolution = 1  # ns
+    else:
+        # Estimate the timer resolution by measuring a no-op.
+        number = 100
+        noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
+        resolution = numpy.min(noop_time) / number * 1.0e+9
+        # round up to nearest integer
+        resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
-    last_repeat = numpy.empty(len(kernels), dtype=int)
-    last_n = numpy.empty(len(kernels), dtype=int)
-    last_total_time = numpy.empty(len(kernels))
+    timings = numpy.empty((len(kernels), len(n_range)), dtype=int)
 
     try:
         for i, n in enumerate(tqdm(n_range)):
@@ -129,33 +128,23 @@ def bench(
                         reference, kernel(data)
                     ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
 
-                if repeat is None:
-                    if i == 0:
-                        # Bootstrap the repeat count and timing
-                        last_repeat[k] = 1
-                        last_n[k] = n
-                        _, last_total_time[k] = _b(
-                            data, kernel, last_repeat[k], resolution
-                        )
-                    # Set the number of repetitions such that it would hit
-                    # target_time_per_measurement if the timing scales linearly
-                    # with n.
-                    rp = (
-                        last_repeat[k]
-                        * target_time_per_measurement
-                        / last_total_time[k]
-                        * last_n[k]
-                        / n
-                    )
-                    # Round up
-                    rp = -int(-rp // 1)
-                else:
-                    # Fixed number of repeats
-                    rp = repeat
+                # First try with one repetition only. If this doesn't exceed the target
+                # time, append as many repeats as the first measurements suggests.
+                # If the kernel is fast, the measurement with one repetition only can
+                # be somewhat off, but most of the time it's good enough.
+                remaining_time = int(target_time_per_measurement * 1.0e+9)
 
-                timings[k, i], last_total_time[k] = _b(data, kernel, rp, resolution)
-                last_repeat[k] = rp
-                last_n[k] = n
+                repeat = 1
+                t, total_time = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                time_per_repetition = total_time / repeat
+
+                remaining_time -= total_time
+                repeat = int(remaining_time // time_per_repetition)
+                if repeat > 0:
+                    t2, _ = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                    t = min(t, t2)
+
+                timings[k, i] = t
 
     except KeyboardInterrupt:
         timings = timings[:, :i]
@@ -167,23 +156,28 @@ def bench(
     return data
 
 
-def _b(data, kernel, repeat, resolution):
+def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     # Make sure that the statement is executed at least so often that the
     # timing exceeds 10 times the resolution of the clock. `number` is larger
     # than 1 only for the fastest computations. Hardly ever happens.
     number = 1
     required_timing = 10 * resolution
-    min_timing = 0.0
+    min_timing = 0
     while min_timing <= required_timing:
         tm = numpy.array(
-            timeit.repeat(stmt=lambda: kernel(data), repeat=repeat, number=number)
+            timeit.repeat(
+                stmt=lambda: kernel(data), repeat=repeat, number=number, timer=timer
+            )
         )
+        if not is_ns_timer:
+            tm *= 1.0e+9
+            tm = tm.astype(int)
         min_timing = numpy.min(tm)
         # plt.title("number={} repeat={}".format(number, repeat))
         # plt.semilogy(tm)
         # # plt.hist(tm)
         # plt.show()
-        tm /= number
+        tm //= number
         # Adapt the number of runs for the next iteration such that the
         # required_timing is just exceeded. If the required timing and
         # minimal timing are just equal, `number` remains the same (up
@@ -199,6 +193,7 @@ def _b(data, kernel, repeat, resolution):
             else max_factor
         )
         number = int(factor * number) + 1
+
     # Only return the minimum time; everthing else just measures
     # how slow the system can go.
     return numpy.min(tm), numpy.sum(tm)
