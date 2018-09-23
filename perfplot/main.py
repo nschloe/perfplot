@@ -72,6 +72,7 @@ class PerfplotData(object):
     def save(self, filename, transparent=True, bbox_inches="tight"):
         self.plot()
         plt.savefig(filename, transparent=transparent, bbox_inches=bbox_inches)
+        plt.close()
         return
 
     def __repr__(self):
@@ -212,7 +213,7 @@ def show(*args, **kwargs):
     return
 
 
-def save(filename, *args, **kwargs):
+def save(filename, transparent=True, *args, **kwargs):
     out = bench(*args, **kwargs)
-    out.save(filename)
+    out.save(filename, transparent)
     return
