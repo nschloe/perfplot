@@ -2,10 +2,9 @@
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg)](https://codecov.io/gh/nschloe/perfplot)
-[![Codacy grade](https://img.shields.io/codacy/grade/32994ce499db42059777d42edcfce900.svg)](https://app.codacy.com/app/nschloe/perfplot/dashboard)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.org/project/perfplot)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?logo=github&label=Stars)](https://github.com/nschloe/perfplot)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/perfplot)
 
 perfplot extends Python's
 [timeit](https://docs.python.org/3/library/timeit.html) by testing snippets
@@ -18,7 +17,7 @@ import numpy
 import perfplot
 
 perfplot.show(
-    setup=numpy.random.rand,
+    setup=lambda n: numpy.random.rand(n),  # or simply setup=numpy.random.rand
     kernels=[
         lambda a: numpy.c_[a, a],
         lambda a: numpy.stack([a, a]).T,
@@ -28,7 +27,15 @@ perfplot.show(
         ],
     labels=['c_', 'stack', 'vstack', 'column_stack', 'concat'],
     n_range=[2**k for k in range(15)],
-    xlabel='len(a)'
+    xlabel='len(a)',
+    # More optional arguments with their default values:
+    # title=None,
+    # logx=False,
+    # logy=False,
+    # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
+    # automatic_order=True,
+    # colors=None,
+    # target_time_per_measurement=1.0,
     )
 ```
 produces
@@ -36,6 +43,22 @@ produces
 ![](https://nschloe.github.io/perfplot/concat.png)
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
+```
+out = perfplot.bench(
+    setup=lambda n: make_data(n),
+    kernels=[
+        lambda a: _split_data(*a, 3),
+        lambda a: _split_data_pd(*a, 3),
+        ],
+    labels=['numpy', 'pandas'],
+    n_range=[2**k for k in range(1,25)],
+    xlabel='N',
+    logx=True,
+    logy=True,
+    equality_check=None,
+    automatic_order=False
+    )
+```
 
 Benchmarking and plotting can be separated, too. This allows multiple plots of
 the same data, for example:
