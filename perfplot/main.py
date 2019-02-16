@@ -112,7 +112,7 @@ def bench(
         # Estimate the timer resolution by measuring a no-op.
         number = 100
         noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
-        resolution = numpy.min(noop_time) / number * 1.0e+9
+        resolution = numpy.min(noop_time) / number * 1.0e9
         # round up to nearest integer
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
@@ -133,7 +133,7 @@ def bench(
                 # time, append as many repeats as the first measurements suggests.
                 # If the kernel is fast, the measurement with one repetition only can
                 # be somewhat off, but most of the time it's good enough.
-                remaining_time = int(target_time_per_measurement * 1.0e+9)
+                remaining_time = int(target_time_per_measurement * 1.0e9)
 
                 repeat = 1
                 t, total_time = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
@@ -171,7 +171,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
             )
         )
         if not is_ns_timer:
-            tm *= 1.0e+9
+            tm *= 1.0e9
             tm = tm.astype(int)
         min_timing = numpy.min(tm)
         # plt.title("number={} repeat={}".format(number, repeat))
