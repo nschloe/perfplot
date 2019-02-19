@@ -43,22 +43,6 @@ produces
 ![](https://nschloe.github.io/perfplot/concat.png)
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
-```
-out = perfplot.bench(
-    setup=lambda n: make_data(n),
-    kernels=[
-        lambda a: _split_data(*a, 3),
-        lambda a: _split_data_pd(*a, 3),
-        ],
-    labels=['numpy', 'pandas'],
-    n_range=[2**k for k in range(1,25)],
-    xlabel='N',
-    logx=True,
-    logy=True,
-    equality_check=None,
-    automatic_order=False
-    )
-```
 
 Benchmarking and plotting can be separated, too. This allows multiple plots of
 the same data, for example:
