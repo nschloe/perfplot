@@ -99,12 +99,13 @@ def bench(
         labels = [k.__name__ for k in kernels]
 
     is_ns_timer = False
-    try:
+    if hasattr(time, "perf_counter_ns"):
         timer = time.perf_counter_ns
-    except AttributeError:
+        is_ns_timer = True
+    elif hasattr(time, "perf_counter"):
         timer = time.perf_counter
     else:
-        is_ns_timer = True
+        timer = timeit.default_timer  # Python 2
 
     if is_ns_timer:
         resolution = 1  # ns
