@@ -1,19 +1,33 @@
 version: 2
 
+workflows:
+  version: 2
+  lint_and_build:
+    jobs:
+      - lint
+      - build
+
 jobs:
+  lint:
+    docker:
+      - image: ubuntu:18.04
+    steps:
+      - checkout
+      - run: apt update
+      - run: apt install -y python3-pip
+      - run: pip3 install -U black flake8
+      - run: LC_ALL=C.UTF-8 black --check setup.py perfplot/ test/*.py
+      - run: flake8 setup.py perfplot/ test/*.py
   build:
     working_directory: ~/work
     docker:
       - image: ubuntu:18.04
     steps:
-      - run: apt-get update
-      - run: apt-get install -y git python3-pip
-      - run: pip3 install -U pytest pytest-cov black flake8
       - checkout
+      - run: apt-get update
+      - run: apt-get install -y python3-pip
+      - run: pip3 install -U pytest pytest-cov
       - run: pip3 install .[all]
-      # format & lint
-      - run: LC_ALL=C.UTF-8 black --check setup.py perfplot/ test/*.py
-      - run: flake8 setup.py perfplot/ test/*.py
       # The actual test
       - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
       # submit to codecov

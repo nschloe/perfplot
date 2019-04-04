@@ -5,16 +5,15 @@ import perfplot
 def test():
     kernels = [lambda a: numpy.c_[a, a]]
     r = [2 ** k for k in range(4)]
-    out = perfplot.bench(
+    perfplot.show(
         setup=numpy.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
         xlabel="len(a)",
     )
-    out.show()
 
-    out = perfplot.bench(
+    perfplot.show(
         setup=numpy.random.rand,
         kernels=kernels,
         labels=["c_"],
@@ -23,7 +22,6 @@ def test():
         logx=True,
         logy=False,
     )
-    out.show()
 
     out = perfplot.bench(
         setup=numpy.random.rand,
@@ -34,9 +32,9 @@ def test():
         logx=False,
         logy=True,
     )
-    out.show()
+    print(out)
 
-    out = perfplot.bench(
+    perfplot.show(
         setup=numpy.random.rand,
         kernels=kernels,
         labels=["c_"],
@@ -45,8 +43,6 @@ def test():
         logx=True,
         logy=True,
     )
-    out.show()
-
     return
 
 
@@ -57,10 +53,7 @@ def test_no_labels():
     kernels = [mytest]
     r = [2 ** k for k in range(4)]
 
-    out = perfplot.bench(
-        setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)"
-    )
-    out.show()
+    perfplot.plot(setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
     return
 
 
@@ -71,12 +64,12 @@ def test_save():
     kernels = [mytest]
     r = [2 ** k for k in range(4)]
 
-    out = perfplot.bench(
+    perfplot.save(
+        "out.png",
         setup=numpy.random.rand,
         kernels=kernels,
         n_range=r,
         xlabel="len(a)",
         title="mytest",
     )
-    out.save("out.png")
     return
