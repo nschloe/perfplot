@@ -5,6 +5,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg)](https://pypi.org/project/perfplot)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/perfplot)
+[![PyPi downloads](https://img.shields.io/pypi/dd/perfplot.svg)](https://pypistats.org/packages/perfplot)
 
 perfplot extends Python's
 [timeit](https://docs.python.org/3/library/timeit.html) by testing snippets
