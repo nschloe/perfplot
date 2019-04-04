@@ -53,9 +53,7 @@ def test_no_labels():
     kernels = [mytest]
     r = [2 ** k for k in range(4)]
 
-    perfplot.plot(
-        setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)"
-    )
+    perfplot.plot(setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
     return
 
 
