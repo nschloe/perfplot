@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 import time
 import timeit
 
@@ -98,18 +96,13 @@ def bench(
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    is_ns_timer = False
     if hasattr(time, "perf_counter_ns"):
         timer = time.perf_counter_ns
         is_ns_timer = True
-    elif hasattr(time, "perf_counter"):
-        timer = time.perf_counter
-    else:
-        timer = timeit.default_timer  # Python 2
-
-    if is_ns_timer:
         resolution = 1  # ns
     else:
+        timer = time.perf_counter
+        is_ns_timer = False
         # Estimate the timer resolution by measuring a no-op.
         number = 100
         noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
