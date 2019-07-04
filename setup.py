@@ -9,7 +9,6 @@ from setuptools import find_packages, setup
 base_dir = os.path.abspath(os.path.dirname(__file__))
 about = {}
 with open(os.path.join(base_dir, "perfplot", "__about__.py"), "rb") as f:
-    # pylint: disable=exec-used
     exec(f.read(), about)
 
 
@@ -31,13 +30,13 @@ setup(
     platforms="any",
     install_requires=["matplotlib", "numpy", "tqdm"],
     extras_require={"all": ["pandas"], "print": ["pandas"]},
+    python_requires=">=3",
     classifiers=[
         about["__status__"],
         about["__license__"],
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Topic :: Software Development",
         "Topic :: Utilities",
