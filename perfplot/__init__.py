@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from perfplot.__about__ import (
     __author__,
     __author_email__,

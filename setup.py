@@ -28,7 +28,7 @@ setup(
     platforms="any",
     install_requires=["matplotlib", "numpy", "tqdm"],
     extras_require={"all": ["pandas"], "print": ["pandas"]},
-    python_requires=">=3",
+    python_requires=">=3.3",
     classifiers=[
         about["__status__"],
         about["__license__"],
