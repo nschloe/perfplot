@@ -24,11 +24,11 @@ perfplot.show(
         lambda a: numpy.stack([a, a]).T,
         lambda a: numpy.vstack([a, a]).T,
         lambda a: numpy.column_stack([a, a]),
-        lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1)
-        ],
-    labels=['c_', 'stack', 'vstack', 'column_stack', 'concat'],
-    n_range=[2**k for k in range(15)],
-    xlabel='len(a)',
+        lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1),
+    ],
+    labels=["c_", "stack", "vstack", "column_stack", "concat"],
+    n_range=[2 ** k for k in range(15)],
+    xlabel="len(a)",
     # More optional arguments with their default values:
     # title=None,
     # logx=False,
@@ -37,7 +37,7 @@ perfplot.show(
     # automatic_order=True,
     # colors=None,
     # target_time_per_measurement=1.0,
-    )
+)
 ```
 produces
 
@@ -79,16 +79,6 @@ To run the perfplot unit tests, check out this repository and type
 ```
 pytest
 ```
-
-### Distribution
-To create a new release
-
-1. bump the `__version__` number,
-
-2. publish to PyPi and tag on GitHub:
-    ```
-    $ make publish
-    ```
 
 ### License
 
