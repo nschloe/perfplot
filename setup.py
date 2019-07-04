@@ -29,7 +29,7 @@ setup(
     url="https://github.com/nschloe/perfplot",
     license=about["__license__"],
     platforms="any",
-    install_requires=["matplotlib", "numpy", "pipdate >=0.3.0, <0.4.0", "tqdm"],
+    install_requires=["matplotlib", "numpy", "tqdm"],
     extras_require={"all": ["pandas"], "print": ["pandas"]},
     classifiers=[
         about["__status__"],
