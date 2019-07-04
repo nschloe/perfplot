@@ -1,4 +1,6 @@
-# perfplot
+<p align="center">
+  <img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%">
+</p>
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg)](https://codecov.io/gh/nschloe/perfplot)
