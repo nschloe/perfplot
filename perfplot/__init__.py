@@ -7,11 +7,10 @@ from perfplot.__about__ import (
     __author_email__,
     __copyright__,
     __license__,
-    __version__,
     __status__,
+    __version__,
 )
-
-from perfplot.main import bench, plot, show, save
+from perfplot.main import bench, plot, save, show
 
 __all__ = [
     "__author__",
