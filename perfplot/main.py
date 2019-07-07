@@ -1,12 +1,13 @@
 import time
 import timeit
 
+import termtables as tt
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
 
 
-class PerfplotData(object):
+class PerfplotData:
     def __init__(
         self,
         n_range,
@@ -74,9 +75,8 @@ class PerfplotData(object):
         return
 
     def __repr__(self):
-        import pandas
-
-        return pandas.DataFrame(self.timings.T, self.n_range, self.labels).to_string()
+        data = numpy.column_stack([self.n_range, self.timings.T])
+        return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
 
 
 def bench(
