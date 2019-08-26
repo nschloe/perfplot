@@ -5,6 +5,19 @@ import termtables as tt
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
+import sys
+
+# Orders of Magnitude for SI time units in {prefix: magnitude} format
+si_time = {
+    "s": 1e0,    # second
+    "ms": 1e-3,  # milisecond
+    "us": 1e-6,  # microsecond
+    "ns": 1e-9,  # nanosecond
+}
+if sys.version_info < (3, 7):
+    # Ensuring that Dictionary is ordered
+    from collections import OrderedDict as odict
+    si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
 class PerfplotData:
@@ -19,9 +32,12 @@ class PerfplotData:
         logx,
         logy,
         automatic_order,
+        automatic_scale=False,
+        timings_unit='ns',  # As measured by the benchmarking process
     ):
         self.n_range = n_range
         self.timings = timings
+        self.timings_unit = timings_unit
         self.labels = labels
 
         self.colors = colors
@@ -49,16 +65,23 @@ class PerfplotData:
             self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
+
+        if automatic_scale:
+            # Makes timings more readable on plot
+            self._scale_timings()
+        else:
+            self.timings *= 1e-9  # Converting from ns to s
+            self.timings_unit = 's'
         return
 
     def plot(self):
         for t, label, color in zip(self.timings, self.labels, self.colors):
-            self.plotfun(self.n_range, t * 1.0e-9, label=label, color=color)
+            self.plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        plt.ylabel("Time in seconds")
+        plt.ylabel(f"Runtime [{self.timings_unit}]")
         plt.grid(True)
         plt.legend()
         return
@@ -78,6 +101,29 @@ class PerfplotData:
         data = numpy.column_stack([self.n_range, self.timings.T])
         return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
 
+    def _scale_timings(self):
+        """ Establishes a readable scale at which to show the
+        :py:attr:`timings` of the benchmark. This is accomplished by
+        converting the minimum execution time into SI second and
+        iterating over the plausible SI prefixes (mili, micro, nano)
+        to find the first one whos magnitude is smaller than the
+        minimum execution time. If the ideal prefix is not equal to
+        the current unit of the timings, then the values are converted
+        with an in-place multiplication.
+
+        Note:
+            This is the same algorithm used by the timeit module
+        """
+        # Minimum value of timings in SI second
+        t_s = numpy.min(self.timings) * si_time[self.timings_unit]
+        for prefix, magnitude in si_time.items():
+            if t_s >= magnitude:
+                break
+        if prefix != self.timings_unit:
+            self.timings *= si_time[self.timings_unit] / magnitude
+            print(si_time[self.timings_unit], magnitude)
+            self.timings_unit = prefix
+
 
 def bench(
     setup,
@@ -92,6 +138,8 @@ def bench(
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
+    automatic_scale=False,
+    timings_unit='ns'
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -110,7 +158,7 @@ def bench(
         # round up to nearest integer
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
-    timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.uint64)
+    timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.float64)
 
     try:
         for i, n in enumerate(tqdm(n_range)):
@@ -146,7 +194,8 @@ def bench(
         n_range = n_range[:i]
 
     data = PerfplotData(
-        n_range, timings, labels, colors, xlabel, title, logx, logy, automatic_order
+        n_range, timings, labels, colors, xlabel, title, logx, logy,
+        automatic_order, automatic_scale, timings_unit
     )
     return data
 
