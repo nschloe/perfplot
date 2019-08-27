@@ -9,7 +9,7 @@ import sys
 
 # Orders of Magnitude for SI time units in {prefix: magnitude} format
 si_time = {
-    "s": 1e0,    # second
+    "s": 1e0,  # second
     "ms": 1e-3,  # milisecond
     "us": 1e-6,  # microsecond
     "ns": 1e-9,  # nanosecond
@@ -17,6 +17,7 @@ si_time = {
 if sys.version_info < (3, 7):
     # Ensuring that Dictionary is ordered
     from collections import OrderedDict as odict
+
     si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
@@ -33,7 +34,7 @@ class PerfplotData:
         logy,
         automatic_order,
         automatic_scale=False,
-        timings_unit='ns',  # As measured by the benchmarking process
+        timings_unit="ns",  # As measured by the benchmarking process
     ):
         self.n_range = n_range
         self.timings = timings
@@ -71,7 +72,7 @@ class PerfplotData:
             self._scale_timings()
         else:
             self.timings *= 1e-9  # Converting from ns to s
-            self.timings_unit = 's'
+            self.timings_unit = "s"
         return
 
     def plot(self):
@@ -111,7 +112,7 @@ class PerfplotData:
         the current unit of the timings, then the values are converted
         with an in-place multiplication.
 
-        Note:
+        .. note::
             This is the same algorithm used by the timeit module
         """
         # Minimum value of timings in SI second
@@ -139,7 +140,7 @@ def bench(
     automatic_order=True,
     equality_check=numpy.allclose,
     automatic_scale=False,
-    timings_unit='ns'
+    timings_unit="ns",
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -194,8 +195,17 @@ def bench(
         n_range = n_range[:i]
 
     data = PerfplotData(
-        n_range, timings, labels, colors, xlabel, title, logx, logy,
-        automatic_order, automatic_scale, timings_unit
+        n_range,
+        timings,
+        labels,
+        colors,
+        xlabel,
+        title,
+        logx,
+        logy,
+        automatic_order,
+        automatic_scale,
+        timings_unit,
     )
     return data
 
