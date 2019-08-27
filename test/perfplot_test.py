@@ -58,7 +58,7 @@ def test_no_labels():
 
 
 def test_automatic_scale():
-    from perfplot.main import PerfplotData, si_time
+    from perfplot.main import PerfplotData
 
     # (expected_prefix, time in nanoseconds, expected_timing) format
     test_cases = [
@@ -81,7 +81,7 @@ def test_automatic_scale():
             logy=False,
             automatic_order=True,
             # True except for last test-case
-            automatic_scale=(True if i != len(test_cases)-1 else False)
+            automatic_scale=(True if i != len(test_cases) - 1 else False)
         )
         # Has the correct prefix been applied?
         assert data.timings_unit == exp_prefix
