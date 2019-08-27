@@ -14,4 +14,5 @@ perfplot.show(
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
     n_range=[2 ** k for k in range(15)],
     xlabel="len(a)",
+    automatic_scale=True,
 )
