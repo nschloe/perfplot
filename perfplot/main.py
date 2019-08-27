@@ -122,7 +122,6 @@ class PerfplotData:
                 break
         if prefix != self.timings_unit:
             self.timings *= si_time[self.timings_unit] / magnitude
-            print(si_time[self.timings_unit], magnitude)
             self.timings_unit = prefix
 
 
