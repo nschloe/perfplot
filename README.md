@@ -39,6 +39,7 @@ perfplot.show(
     # automatic_order=True,
     # colors=None,
     # target_time_per_measurement=1.0,
+    # time_unit=None  # set to one of ("s", "ms", "us", or "ns") to force plot units
 )
 ```
 produces
