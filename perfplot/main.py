@@ -172,7 +172,7 @@ def bench(
         # round up to nearest integer
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
-    timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.float64)
+    timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.uint64)
 
     try:
         for i, n in enumerate(tqdm(n_range)):
