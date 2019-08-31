@@ -58,7 +58,7 @@ def test_automatic_scale():
     import re
 
     # Regular Expression that retrieves the plot unit from label
-    unit_re = re.compile(r'\[([mun]?[s])\]')
+    unit_re = re.compile(r"\[([mun]?[s])\]")
 
     # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
     test_cases = [
