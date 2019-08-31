@@ -7,7 +7,7 @@ import numpy
 from tqdm import tqdm
 import sys
 
-# Orders of Magnitude for SI time units in {prefix: magnitude} format
+# Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
     "s": 1e0,  # second
     "ms": 1e-3,  # milisecond
@@ -22,6 +22,10 @@ if sys.version_info < (3, 7):
 
 
 class PerfplotData:
+
+    # Current unit of the timings (Initially in 'ns' due to output of benchmark)
+    _current_unit = "ns"
+
     def __init__(
         self,
         n_range,
@@ -33,12 +37,10 @@ class PerfplotData:
         logx,
         logy,
         automatic_order,
-        automatic_scale=False,
-        timings_unit="ns",  # As measured by the benchmarking process
+        time_unit=None,
     ):
         self.n_range = n_range
         self.timings = timings
-        self.timings_unit = timings_unit
         self.labels = labels
 
         self.colors = colors
@@ -67,13 +69,16 @@ class PerfplotData:
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
 
-        if automatic_scale:
-            # Makes timings more readable on plot
-            self._scale_timings()
+        # Set time unit if specified. Allowed values: ("s", "ms", "us", "ns")
+        if time_unit is None:
+            self.time_unit = self._auto_time_unit()
+        elif time_unit in si_time:
+            self.time_unit = time_unit
         else:
-            self.timings *= 1e-9  # Converting from ns to s
-            self.timings_unit = "s"
-        return
+            raise ValueError("Provided `time_unit` is not valid")
+
+        # Scale timings based on time_unit
+        self._scale_timings()
 
     def plot(self):
         for t, label, color in zip(self.timings, self.labels, self.colors):
@@ -82,7 +87,7 @@ class PerfplotData:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        plt.ylabel(f"Runtime [{self.timings_unit}]")
+        plt.ylabel(f"Runtime [{self.time_unit}]")
         plt.grid(True)
         plt.legend()
         return
@@ -102,27 +107,37 @@ class PerfplotData:
         data = numpy.column_stack([self.n_range, self.timings.T])
         return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
 
-    def _scale_timings(self):
-        """ Establishes a readable scale at which to show the
-        :py:attr:`timings` of the benchmark. This is accomplished by
-        converting the minimum execution time into SI second and
-        iterating over the plausible SI prefixes (mili, micro, nano)
-        to find the first one whos magnitude is smaller than the
-        minimum execution time. If the ideal prefix is not equal to
-        the current unit of the timings, then the values are converted
-        with an in-place multiplication.
+    def _auto_time_unit(self):
+        """ Automatically obtains a readable unit at which to plot
+        :py:attr:`timings` of the benchmarking process. This is
+        accomplished by converting the minimum measured execution time
+        into SI second and iterating over the plausible SI time units
+        (s, ms, us, ns) to find the first one whos magnitude is smaller
+        than the minimum execution time.
+
+        :rtype: str
 
         .. note::
             This is the same algorithm used by the timeit module
         """
-        # Minimum value of timings in SI second
-        t_s = numpy.min(self.timings) * si_time[self.timings_unit]
-        for prefix, magnitude in si_time.items():
+        t_s = numpy.min(self.timings) * si_time[self._current_unit]
+        for time_unit, magnitude in si_time.items():
             if t_s >= magnitude:
                 break
-        if prefix != self.timings_unit:
-            self.timings *= si_time[self.timings_unit] / magnitude
-            self.timings_unit = prefix
+        return time_unit
+
+    def _scale_timings(self):
+        """ Converts the :py:attr:`timings` of the benchmark into the
+        desired :py:attr:`time_unit` if there is a mismatch between the
+        current unit of the timings and the desired unit set by
+        :py:attr:`time_unit`. """
+        if self.time_unit != self._current_unit:
+            # Conversion Factor = Current / Desired Magnitude
+            factor = si_time[self._current_unit] / si_time[self.time_unit]
+
+            # Scaling timings and updating its current unit
+            self.timings = self.timings.astype(numpy.float64) * factor
+            self._current_unit = self.time_unit
 
 
 def bench(
@@ -138,8 +153,7 @@ def bench(
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
-    automatic_scale=False,
-    timings_unit="ns",
+    time_unit=None,
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -203,8 +217,7 @@ def bench(
         logx,
         logy,
         automatic_order,
-        automatic_scale,
-        timings_unit,
+        time_unit,
     )
     return data
 
