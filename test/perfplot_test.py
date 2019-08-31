@@ -54,35 +54,51 @@ def test_no_labels():
 
 def test_automatic_scale():
     from perfplot.main import PerfplotData
+    from matplotlib import pyplot as plt
+    import re
 
-    # (expected_prefix, time in nanoseconds, expected_timing) format
+    # Regular Expression that retrieves the plot unit from label
+    unit_re = re.compile(r'\[([mun]?[s])\]')
+
+    # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
     test_cases = [
-        ("ns", 0.125, 0.125),  # Dealing w/ edge-case when timing < nanosecond
-        ("us", 9.999e5, 999.9),  # Almost a milisecond
-        ("ms", 1e6, 1.0),  # Equal exactly to a milisecond
-        ("s", 1.5e9, 1.5),  # Over 1 second
-        ("s", 1e9, 1.0),  # Tests if disabling ``automatic_scale`` yields seconds
+        # Dealing w/ edge-case when timing < nanosecond
+        ("ns", 0.125, 0, None),
+        # Almost a milisecond
+        ("us", 9.999e5, 999.9, None),
+        # Equal exactly to a milisecond
+        ("ms", 1e6, 1.0, None),
+        # Over 1 second
+        ("s", 1.5e9, 1.5, None),
+        # Checking if providing 's' for time_unit yields seconds
+        ("s", 1e9, 1.0, "s"),
     ]
-    for i, (exp_prefix, time_ns, exp_timing) in enumerate(test_cases):
+
+    for exp_unit, time_ns, exp_timing, time_unit in test_cases:
         data = PerfplotData(
             n_range=[1],
             # Converting timings to ns
-            timings=numpy.full((1, 1), time_ns, dtype=numpy.float64),
-            labels=[""],
-            colors=[""],
+            timings=numpy.full((1, 1), time_ns, dtype=numpy.uint64),
+            labels=["."],  # Suppress no handle error # TODO fix this
+            colors=None,
             xlabel="",
             title="",
             logx=False,
             logy=False,
             automatic_order=True,
-            # True except for last test-case
-            automatic_scale=(True if i != len(test_cases) - 1 else False),
+            time_unit=time_unit,
         )
-        # Has the correct prefix been applied?
-        assert data.timings_unit == exp_prefix
+        # Has the correct unit been selected?
+        assert data.time_unit == exp_unit
 
-        # Have the timings been updated correctly?
-        assert numpy.min(data.timings) == exp_timing
+        # Has the correct unit been applied to the y_label?
+        data.plot()
+        ax = plt.gca()
+        plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
+        assert plot_unit == exp_unit
+
+        # Has the timing been converted correctly?
+        assert data.timings == exp_timing
 
 
 def test_save():
