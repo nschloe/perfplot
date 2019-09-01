@@ -22,10 +22,6 @@ if sys.version_info < (3, 7):
 
 
 class PerfplotData:
-
-    # Current unit of the timings (Initially in 'ns' due to output of benchmark)
-    _current_unit = "ns"
-
     def __init__(
         self,
         n_range,
@@ -77,11 +73,9 @@ class PerfplotData:
         else:
             raise ValueError("Provided `time_unit` is not valid")
 
-        # Scale timings based on time_unit
-        self._scale_timings()
-
     def plot(self):
-        for t, label, color in zip(self.timings, self.labels, self.colors):
+        scaled_timings = self.timings * (si_time["ns"] / si_time[self.time_unit])
+        for t, label, color in zip(scaled_timings, self.labels, self.colors):
             self.plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
@@ -120,24 +114,12 @@ class PerfplotData:
         .. note::
             This is the same algorithm used by the timeit module
         """
-        t_s = numpy.min(self.timings) * si_time[self._current_unit]
+        # Converting minimum timing into seconds from nanoseconds
+        t_s = numpy.min(self.timings) * si_time["ns"]
         for time_unit, magnitude in si_time.items():
             if t_s >= magnitude:
                 break
         return time_unit
-
-    def _scale_timings(self):
-        """ Converts the :py:attr:`timings` of the benchmark into the
-        desired :py:attr:`time_unit` if there is a mismatch between the
-        current unit of the timings and the desired unit set by
-        :py:attr:`time_unit`. """
-        if self.time_unit != self._current_unit:
-            # Conversion Factor = Current / Desired Magnitude
-            factor = si_time[self._current_unit] / si_time[self.time_unit]
-
-            # Scaling timings and updating its current unit
-            self.timings = self.timings.astype(numpy.float64) * factor
-            self._current_unit = self.time_unit
 
 
 def bench(
