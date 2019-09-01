@@ -63,13 +63,13 @@ def test_automatic_scale():
     # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
     test_cases = [
         # Dealing w/ edge-case when timing < nanosecond
-        ("ns", 0.125, None),
+        ("ns", 0.125, "auto"),
         # Almost a milisecond
-        ("us", 9.999e5, None),
+        ("us", 9.999e5, "auto"),
         # Equal exactly to a milisecond
-        ("ms", 1e6, None),
+        ("ms", 1e6, "auto"),
         # Over 1 second
-        ("s", 1.5e9, None),
+        ("s", 1.5e9, "auto"),
         # Checking if providing 's' for time_unit yields seconds
         ("s", 1e9, "s"),
     ]
