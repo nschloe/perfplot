@@ -63,18 +63,18 @@ def test_automatic_scale():
     # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
     test_cases = [
         # Dealing w/ edge-case when timing < nanosecond
-        ("ns", 0.125, 0, None),
+        ("ns", 0.125, None),
         # Almost a milisecond
-        ("us", 9.999e5, 999.9, None),
+        ("us", 9.999e5, None),
         # Equal exactly to a milisecond
-        ("ms", 1e6, 1.0, None),
+        ("ms", 1e6, None),
         # Over 1 second
-        ("s", 1.5e9, 1.5, None),
+        ("s", 1.5e9, None),
         # Checking if providing 's' for time_unit yields seconds
-        ("s", 1e9, 1.0, "s"),
+        ("s", 1e9, "s"),
     ]
 
-    for exp_unit, time_ns, exp_timing, time_unit in test_cases:
+    for exp_unit, time_ns, time_unit in test_cases:
         data = PerfplotData(
             n_range=[1],
             # Converting timings to ns
@@ -96,9 +96,6 @@ def test_automatic_scale():
         ax = plt.gca()
         plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
         assert plot_unit == exp_unit
-
-        # Has the timing been converted correctly?
-        assert data.timings == exp_timing
 
 
 def test_save():
