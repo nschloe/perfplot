@@ -33,7 +33,7 @@ class PerfplotData:
         logx,
         logy,
         automatic_order,
-        time_unit=None,
+        time_unit="auto",
     ):
         self.n_range = n_range
         self.timings = timings
@@ -65,8 +65,8 @@ class PerfplotData:
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
 
-        # Set time unit if specified. Allowed values: ("s", "ms", "us", "ns")
-        if time_unit is None:
+        # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
+        if time_unit == "auto":
             self.time_unit = self._auto_time_unit()
         elif time_unit in si_time:
             self.time_unit = time_unit
@@ -135,7 +135,7 @@ def bench(
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
-    time_unit=None,
+    time_unit="auto",
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
