@@ -4,10 +4,10 @@
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/perfplot/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg?style=flat-square)](https://codecov.io/gh/nschloe/perfplot)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg?style=flat-square)](https://pypi.org/project/perfplot)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/perfplot)
-[![PyPi downloads](https://img.shields.io/pypi/dd/perfplot.svg?style=flat-square)](https://pypistats.org/packages/perfplot)
+[![PyPi downloads](https://img.shields.io/pypi/dm/perfplot.svg?style=flat-square)](https://pypistats.org/packages/perfplot)
 
 perfplot extends Python's [timeit](https://docs.python.org/3/library/timeit.html) by
 testing snippets with input parameters (e.g., the size of an array) and plotting the
