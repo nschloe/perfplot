@@ -5,6 +5,20 @@ import termtables as tt
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
+import sys
+
+# Orders of Magnitude for SI time units in {unit: magnitude} format
+si_time = {
+    "s": 1e0,  # second
+    "ms": 1e-3,  # milisecond
+    "us": 1e-6,  # microsecond
+    "ns": 1e-9,  # nanosecond
+}
+if sys.version_info < (3, 7):
+    # Ensuring that Dictionary is ordered
+    from collections import OrderedDict as odict
+
+    si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
 class PerfplotData:
@@ -19,6 +33,7 @@ class PerfplotData:
         logx,
         logy,
         automatic_order,
+        time_unit="auto",
     ):
         self.n_range = n_range
         self.timings = timings
@@ -49,16 +64,24 @@ class PerfplotData:
             self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
-        return
+
+        # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
+        if time_unit == "auto":
+            self.time_unit = self._auto_time_unit()
+        elif time_unit in si_time:
+            self.time_unit = time_unit
+        else:
+            raise ValueError("Provided `time_unit` is not valid")
 
     def plot(self):
-        for t, label, color in zip(self.timings, self.labels, self.colors):
-            self.plotfun(self.n_range, t * 1.0e-9, label=label, color=color)
+        scaled_timings = self.timings * (si_time["ns"] / si_time[self.time_unit])
+        for t, label, color in zip(scaled_timings, self.labels, self.colors):
+            self.plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        plt.ylabel("Time in seconds")
+        plt.ylabel(f"Runtime [{self.time_unit}]")
         plt.grid(True)
         plt.legend()
         return
@@ -78,6 +101,26 @@ class PerfplotData:
         data = numpy.column_stack([self.n_range, self.timings.T])
         return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
 
+    def _auto_time_unit(self):
+        """ Automatically obtains a readable unit at which to plot
+        :py:attr:`timings` of the benchmarking process. This is
+        accomplished by converting the minimum measured execution time
+        into SI second and iterating over the plausible SI time units
+        (s, ms, us, ns) to find the first one whos magnitude is smaller
+        than the minimum execution time.
+
+        :rtype: str
+
+        .. note::
+            This is the same algorithm used by the timeit module
+        """
+        # Converting minimum timing into seconds from nanoseconds
+        t_s = numpy.min(self.timings) * si_time["ns"]
+        for time_unit, magnitude in si_time.items():
+            if t_s >= magnitude:
+                break
+        return time_unit
+
 
 def bench(
     setup,
@@ -92,6 +135,7 @@ def bench(
     logy=False,
     automatic_order=True,
     equality_check=numpy.allclose,
+    time_unit="auto",
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -146,7 +190,16 @@ def bench(
         n_range = n_range[:i]
 
     data = PerfplotData(
-        n_range, timings, labels, colors, xlabel, title, logx, logy, automatic_order
+        n_range,
+        timings,
+        labels,
+        colors,
+        xlabel,
+        title,
+        logx,
+        logy,
+        automatic_order,
+        time_unit,
     )
     return data
 
