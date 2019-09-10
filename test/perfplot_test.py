@@ -1,4 +1,5 @@
 import numpy
+
 import perfplot
 
 kernels = [lambda a: numpy.c_[a, a]]
@@ -86,13 +87,9 @@ def test_automatic_scale():
             logx=False,
             logy=False,
             automatic_order=True,
-            time_unit=time_unit,
         )
-        # Has the correct unit been selected?
-        assert data.time_unit == exp_unit
-
         # Has the correct unit been applied to the y_label?
-        data.plot()
+        data.plot(time_unit=time_unit)
         ax = plt.gca()
         plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
         assert plot_unit == exp_unit
