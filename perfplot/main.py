@@ -160,7 +160,7 @@ def bench(
             data = setup(n)
             if equality_check:
                 reference = kernels[0](data)
-            for k, kernel in enumerate(tqdm(kernels)):
+            for k, kernel in enumerate(tqdm(kernels, leave=(i == len(n_range) - 1))):
                 if equality_check:
                     assert equality_check(
                         reference, kernel(data)
