@@ -1,5 +1,31 @@
 version: 2
 
+jobs:
+  lint:
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - run: pip3 install -U black flake8 --user
+      - run: black --check .
+      - run: flake8 .
+  build:
+    working_directory: ~/work
+    docker:
+      - image: circleci/python:3
+    steps:
+      - checkout
+      - run: pip3 install -U pytest pytest-cov --user
+      - run: pip3 install .[all] --user
+      # The actual test
+      - run:
+          command: pytest --cov perfplot
+          working_directory: test/
+          environment:
+            MPLBACKEND: Agg
+      # submit to codecov
+      - run: bash <(curl -s https://codecov.io/bash)
+
 workflows:
   version: 2
   lint_and_build:
@@ -7,29 +33,3 @@ workflows:
       - lint
       - build
 
-jobs:
-  lint:
-    docker:
-      - image: ubuntu:18.04
-    steps:
-      - checkout
-      - run: apt update
-      - run: apt install -y python3-pip
-      - run: pip3 install -U black flake8
-      - run: LC_ALL=C.UTF-8 black --check .
-      - run: flake8 .
-  build:
-    working_directory: ~/work
-    docker:
-      - image: ubuntu:18.04
-    steps:
-      - checkout
-      - run: apt-get update
-      - run: apt-get install -y python3-pip
-      - run: pip3 install -U pytest pytest-cov
-      - run: pip3 install .[all]
-      # The actual test
-      - run: cd test/ && MPLBACKEND=Agg pytest --cov perfplot
-      # submit to codecov
-      - run: apt-get install -y curl
-      - run: bash <(curl -s https://codecov.io/bash) -R ~/work
