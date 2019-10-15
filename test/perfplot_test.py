@@ -59,14 +59,14 @@ def test_automatic_scale():
     import re
 
     # Regular Expression that retrieves the plot unit from label
-    unit_re = re.compile(r"\[([mun]?[s])\]")
+    unit_re = re.compile(r"\[([mμsn]?[s])\]")
 
     # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
     test_cases = [
         # Dealing w/ edge-case when timing < nanosecond
         ("ns", 0.125, "auto"),
         # Almost a milisecond
-        ("us", 9.999e5, "auto"),
+        ("μs", 9.999e5, "auto"),
         # Equal exactly to a milisecond
         ("ms", 1e6, "auto"),
         # Over 1 second
