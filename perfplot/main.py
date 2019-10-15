@@ -12,7 +12,7 @@ import termtables as tt
 si_time = {
     "s": 1e0,  # second
     "ms": 1e-3,  # milisecond
-    "us": 1e-6,  # microsecond
+    "μs": 1e-6,  # microsecond
     "ns": 1e-9,  # nanosecond
 }
 if sys.version_info < (3, 7):
@@ -106,13 +106,13 @@ class PerfplotData:
         plt.legend()
         return
 
-    def show(self):
-        self.plot()
+    def show(self, time_unit="auto"):
+        self.plot(time_unit=time_unit)
         plt.show()
         return
 
-    def save(self, filename, transparent=True, bbox_inches="tight"):
-        self.plot()
+    def save(self, filename, transparent=True, bbox_inches="tight", time_unit="auto"):
+        self.plot(time_unit=time_unit)
         plt.savefig(filename, transparent=transparent, bbox_inches=bbox_inches)
         plt.close()
         return
@@ -238,19 +238,19 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 
 # For backward compatibility:
-def plot(*args, **kwargs):
+def plot(*args, time_unit="auto", **kwargs):
     out = bench(*args, **kwargs)
-    out.plot()
+    out.plot(time_unit=time_unit)
     return
 
 
-def show(*args, **kwargs):
+def show(*args, time_unit="auto", **kwargs):
     out = bench(*args, **kwargs)
-    out.show()
+    out.show(time_unit=time_unit)
     return
 
 
-def save(filename, transparent=True, *args, **kwargs):
+def save(filename, transparent=True, *args, time_unit="auto", **kwargs):
     out = bench(*args, **kwargs)
     out.save(filename, transparent)
     return
