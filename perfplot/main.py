@@ -252,5 +252,5 @@ def show(*args, time_unit="auto", **kwargs):
 
 def save(filename, transparent=True, *args, time_unit="auto", **kwargs):
     out = bench(*args, **kwargs)
-    out.save(filename, transparent)
+    out.save(filename, transparent, time_unit=time_unit)
     return
