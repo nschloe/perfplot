@@ -12,7 +12,7 @@ import termtables as tt
 si_time = {
     "s": 1e0,  # second
     "ms": 1e-3,  # milisecond
-    "μs": 1e-6,  # microsecond
+    "us": 1e-6,  # microsecond
     "ns": 1e-9,  # nanosecond
 }
 if sys.version_info < (3, 7):
@@ -87,7 +87,7 @@ class PerfplotData:
 
         return
 
-    def plot(self, time_unit="auto"):
+    def plot(self, time_unit="s"):
         # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
         if time_unit == "auto":
             time_unit = _auto_time_unit(numpy.min(self.timings))
@@ -106,13 +106,13 @@ class PerfplotData:
         plt.legend()
         return
 
-    def show(self, time_unit="auto"):
-        self.plot(time_unit=time_unit)
+    def show(self, **kwargs):
+        self.plot(**kwargs)
         plt.show()
         return
 
-    def save(self, filename, transparent=True, bbox_inches="tight", time_unit="auto"):
-        self.plot(time_unit=time_unit)
+    def save(self, filename, transparent=True, bbox_inches="tight", **kwargs):
+        self.plot(**kwargs)
         plt.savefig(filename, transparent=transparent, bbox_inches=bbox_inches)
         plt.close()
         return
