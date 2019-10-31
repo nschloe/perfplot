@@ -16,7 +16,7 @@ si_time = {
     "ns": 1e-9,  # nanosecond
 }
 if sys.version_info < (3, 7):
-    # Ensuring that Dictionary is ordered
+    # Make sure that Dictionary is ordered
     from collections import OrderedDict as odict
 
     si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
@@ -44,16 +44,7 @@ def _auto_time_unit(min_time_ns):
 
 class PerfplotData:
     def __init__(
-        self,
-        n_range,
-        timings,
-        labels,
-        colors,
-        xlabel,
-        title,
-        logx,
-        logy,
-        automatic_order,
+        self, n_range, timings, labels, colors, xlabel, title,
     ):
         self.n_range = n_range
         self.timings = timings
@@ -67,55 +58,64 @@ class PerfplotData:
         self.xlabel = xlabel
         self.title = title
 
+    def plot(
+        self,
+        automatic_order=True,
+        time_unit="s",
+        relative_to=None,
+        logx=False,
+        logy=False,
+    ):
         # choose plot function
         if logx and logy:
-            self.plotfun = plt.loglog
+            plotfun = plt.loglog
         elif logx:
-            self.plotfun = plt.semilogx
+            plotfun = plt.semilogx
         elif logy:
-            self.plotfun = plt.semilogy
+            plotfun = plt.semilogy
         else:
-            self.plotfun = plt.plot
+            plotfun = plt.plot
 
         if automatic_order:
-            # Sort timings by the last entry. This makes the order in the
-            # legend correspond to the order of the lines.
+            # Sort timings by the last entry. This makes the order in the legend
+            # correspond to the order of the lines.
             order = numpy.argsort(self.timings[:, -1])[::-1]
+            if relative_to:
+                relative_to = order[relative_to]
             self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
 
-        return
+        if relative_to is None:
+            # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
+            if time_unit == "auto":
+                time_unit = _auto_time_unit(numpy.min(self.timings))
+            else:
+                assert time_unit in si_time, "Provided `time_unit` is not valid"
 
-    def plot(self, time_unit="s"):
-        # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
-        if time_unit == "auto":
-            time_unit = _auto_time_unit(numpy.min(self.timings))
+            scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
+            plt.ylabel(f"Runtime [{time_unit}]")
         else:
-            assert time_unit in si_time, "Provided `time_unit` is not valid"
+            scaled_timings = self.timings / self.timings[relative_to]
+            plt.ylabel(f"Runtime relative to {self.labels[relative_to]}")
 
-        scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
         for t, label, color in zip(scaled_timings, self.labels, self.colors):
-            self.plotfun(self.n_range, t, label=label, color=color)
+            plotfun(self.n_range, t, label=label, color=color)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        plt.ylabel(f"Runtime [{time_unit}]")
         plt.grid(True)
         plt.legend()
-        return
 
     def show(self, **kwargs):
         self.plot(**kwargs)
         plt.show()
-        return
 
     def save(self, filename, transparent=True, bbox_inches="tight", **kwargs):
         self.plot(**kwargs)
         plt.savefig(filename, transparent=transparent, bbox_inches=bbox_inches)
         plt.close()
-        return
 
     def __repr__(self):
         data = numpy.column_stack([self.n_range, self.timings.T])
@@ -131,9 +131,6 @@ def bench(
     xlabel=None,
     title=None,
     target_time_per_measurement=1.0,
-    logx=False,
-    logy=False,
-    automatic_order=True,
     equality_check=numpy.allclose,
 ):
     if labels is None:
@@ -159,11 +156,11 @@ def bench(
         for i, n in enumerate(tqdm(n_range)):
             data = setup(n)
             if equality_check:
-                reference = kernels[0](data)
+                relative_to = kernels[0](data)
             for k, kernel in enumerate(tqdm(kernels, leave=(i == len(n_range) - 1))):
                 if equality_check:
                     assert equality_check(
-                        reference, kernel(data)
+                        relative_to, kernel(data)
                     ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
 
                 # First try with one repetition only. If this doesn't exceed the target
@@ -188,9 +185,7 @@ def bench(
         timings = timings[:, :i]
         n_range = n_range[:i]
 
-    data = PerfplotData(
-        n_range, timings, labels, colors, xlabel, title, logx, logy, automatic_order
-    )
+    data = PerfplotData(n_range, timings, labels, colors, xlabel, title)
     return data
 
 
@@ -238,19 +233,62 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 
 # For backward compatibility:
-def plot(*args, time_unit="s", **kwargs):
+def plot(
+    *args,
+    time_unit="s",
+    logx=False,
+    logy=False,
+    relative_to=None,
+    automatic_order=True,
+    **kwargs,
+):
     out = bench(*args, **kwargs)
-    out.plot(time_unit=time_unit)
-    return
+    out.plot(
+        time_unit=time_unit,
+        logx=logx,
+        logy=logy,
+        relative_to=relative_to,
+        automatic_order=automatic_order,
+    )
 
 
-def show(*args, time_unit="s", **kwargs):
+def show(
+    *args,
+    time_unit="s",
+    relative_to=None,
+    logx=False,
+    logy=False,
+    automatic_order=True,
+    **kwargs,
+):
     out = bench(*args, **kwargs)
-    out.show(time_unit=time_unit)
-    return
+    out.show(
+        time_unit=time_unit,
+        relative_to=relative_to,
+        logx=logx,
+        logy=logy,
+        automatic_order=automatic_order,
+    )
 
 
-def save(filename, transparent=True, *args, time_unit="s", **kwargs):
+def save(
+    filename,
+    transparent=True,
+    *args,
+    time_unit="s",
+    logx=False,
+    logy=False,
+    relative_to=None,
+    automatic_order=True,
+    **kwargs,
+):
     out = bench(*args, **kwargs)
-    out.save(filename, transparent, time_unit=time_unit)
-    return
+    out.save(
+        filename,
+        transparent,
+        time_unit=time_unit,
+        logx=logx,
+        logy=logy,
+        relative_to=relative_to,
+        automatic_order=automatic_order,
+    )

@@ -31,8 +31,6 @@ def test():
         labels=["c_"],
         n_range=r,
         xlabel="len(a)",
-        logx=False,
-        logy=True,
     )
     print(out)
 
@@ -84,8 +82,6 @@ def test_automatic_scale():
             colors=None,
             xlabel="",
             title="",
-            logx=False,
-            logy=False,
             automatic_order=True,
         )
         # Has the correct unit been applied to the y_label?
