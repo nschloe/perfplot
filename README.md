@@ -39,12 +39,14 @@ perfplot.show(
     # automatic_order=True,
     # colors=None,
     # target_time_per_measurement=1.0,
-    # time_unit="auto"  # set to one of ("s", "ms", "us", or "ns") to force plot units
+    # time_unit="auto",  # set to one of ("s", "ms", "us", or "ns") to force plot units
+    # relative_to=1,  # plot the timings relative to one of the measurements
 )
 ```
 produces
 
-![](https://nschloe.github.io/perfplot/concat.png)
+![](https://nschloe.github.io/perfplot/concat.svg) | ![](https://nschloe.github.io/perfplot/relative.svg)
+| --- | --- |
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
 
@@ -55,7 +57,7 @@ out = perfplot.bench(
     # same arguments as above
     )
 out.show()
-out.save('perf.png')
+out.save("perf.png")
 ```
 
 Other examples:
