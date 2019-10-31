@@ -45,8 +45,8 @@ perfplot.show(
 ```
 produces
 
-![](https://nschloe.github.io/perfplot/concat.svg)
-![](https://nschloe.github.io/perfplot/relative.svg)
+![](https://nschloe.github.io/perfplot/concat.svg) | ![](https://nschloe.github.io/perfplot/relative.svg)
+| --- | --- |
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
 
