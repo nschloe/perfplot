@@ -80,7 +80,7 @@ class PerfplotData:
             # Sort timings by the last entry. This makes the order in the legend
             # correspond to the order of the lines.
             order = numpy.argsort(self.timings[:, -1])[::-1]
-            if relative_to:
+            if relative_to is not None:
                 relative_to = order[relative_to]
             self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]

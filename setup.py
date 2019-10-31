@@ -27,7 +27,7 @@ setup(
     license=about["__license__"],
     platforms="any",
     install_requires=["matplotlib", "numpy", "tqdm", "termtables"],
-    python_requires=">=3.3",
+    python_requires=">=3.6",
     classifiers=[
         about["__status__"],
         about["__license__"],
