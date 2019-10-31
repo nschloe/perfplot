@@ -238,19 +238,19 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 
 # For backward compatibility:
-def plot(*args, time_unit="auto", **kwargs):
+def plot(*args, time_unit="s", **kwargs):
     out = bench(*args, **kwargs)
     out.plot(time_unit=time_unit)
     return
 
 
-def show(*args, time_unit="auto", **kwargs):
+def show(*args, time_unit="s", **kwargs):
     out = bench(*args, **kwargs)
     out.show(time_unit=time_unit)
     return
 
 
-def save(filename, transparent=True, *args, time_unit="auto", **kwargs):
+def save(filename, transparent=True, *args, time_unit="s", **kwargs):
     out = bench(*args, **kwargs)
     out.save(filename, transparent, time_unit=time_unit)
     return
