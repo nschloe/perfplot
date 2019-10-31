@@ -82,7 +82,6 @@ def test_automatic_scale():
             colors=None,
             xlabel="",
             title="",
-            automatic_order=True,
         )
         # Has the correct unit been applied to the y_label?
         data.plot(time_unit=time_unit)
@@ -99,5 +98,6 @@ def test_save():
         n_range=r,
         xlabel="len(a)",
         title="mytest",
+        relative_to=0,
     )
     return
