@@ -81,7 +81,7 @@ class PerfplotData:
             # correspond to the order of the lines.
             order = numpy.argsort(self.timings[:, -1])[::-1]
             if relative_to is not None:
-                relative_to = order[relative_to]
+                relative_to = numpy.where(order == relative_to)[0][0]
             self.timings = self.timings[order]
             self.labels = [self.labels[i] for i in order]
             self.colors = [self.colors[i] for i in order]
@@ -159,6 +159,7 @@ def bench(
                 relative_to = kernels[0](data)
             for k, kernel in enumerate(tqdm(kernels, leave=(i == len(n_range) - 1))):
                 if equality_check:
+                    assert kernel(data) is not None, "{} returned None".format(labels[k])
                     assert equality_check(
                         relative_to, kernel(data)
                     ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
