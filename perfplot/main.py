@@ -159,7 +159,9 @@ def bench(
                 relative_to = kernels[0](data)
             for k, kernel in enumerate(tqdm(kernels, leave=(i == len(n_range) - 1))):
                 if equality_check:
-                    assert kernel(data) is not None, "{} returned None".format(labels[k])
+                    assert kernel(data) is not None, "{} returned None".format(
+                        labels[k]
+                    )
                     assert equality_check(
                         relative_to, kernel(data)
                     ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
