@@ -33,8 +33,8 @@ perfplot.show(
     xlabel="len(a)",
     # More optional arguments with their default values:
     # title=None,
-    # logx=False,
-    # logy=False,
+    # logx="auto",  # set to True or False to force scaling
+    # logy="auto",
     # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
     # automatic_order=True,
     # colors=None,
