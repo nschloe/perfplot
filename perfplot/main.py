@@ -59,7 +59,7 @@ class PerfplotData:
         self.xlabel = xlabel
         self.title = title
 
-    def plot(
+    def plot(  # noqa: C901
         self,
         automatic_order=True,
         time_unit="s",
