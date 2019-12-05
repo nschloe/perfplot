@@ -44,10 +44,11 @@ def _auto_time_unit(min_time_ns):
 
 class PerfplotData:
     def __init__(
-        self, n_range, timings, labels, colors, xlabel, title,
+        self, n_range, timings, flop, labels, colors, xlabel, title,
     ):
         self.n_range = n_range
         self.timings = timings
+        self.flop = flop
         self.labels = labels
 
         self.colors = colors
@@ -76,31 +77,54 @@ class PerfplotData:
         else:
             plotfun = plt.plot
 
-        if automatic_order:
-            # Sort timings by the last entry. This makes the order in the legend
-            # correspond to the order of the lines.
-            order = numpy.argsort(self.timings[:, -1])[::-1]
-            if relative_to is not None:
-                relative_to = numpy.where(order == relative_to)[0][0]
-            self.timings = self.timings[order]
-            self.labels = [self.labels[i] for i in order]
-            self.colors = [self.colors[i] for i in order]
+        if self.flop is None:
+            if automatic_order:
+                # Sort timings by the last entry. This makes the order in the legend
+                # correspond to the order of the lines.
+                order = numpy.argsort(self.timings[:, -1])[::-1]
+                if relative_to is not None:
+                    relative_to = numpy.where(order == relative_to)[0][0]
+                self.timings = self.timings[order]
+                self.labels = [self.labels[i] for i in order]
+                self.colors = [self.colors[i] for i in order]
 
-        if relative_to is None:
-            # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
-            if time_unit == "auto":
-                time_unit = _auto_time_unit(numpy.min(self.timings))
+            if relative_to is None:
+                # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
+                if time_unit == "auto":
+                    time_unit = _auto_time_unit(numpy.min(self.timings))
+                else:
+                    assert time_unit in si_time, "Provided `time_unit` is not valid"
+
+                scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
+                plt.ylabel(f"Runtime [{time_unit}]")
             else:
-                assert time_unit in si_time, "Provided `time_unit` is not valid"
+                scaled_timings = self.timings / self.timings[relative_to]
+                plt.ylabel(f"Runtime relative to {self.labels[relative_to]}")
 
-            scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-            plt.ylabel(f"Runtime [{time_unit}]")
+            for t, label, color in zip(scaled_timings, self.labels, self.colors):
+                plotfun(self.n_range, t, label=label, color=color)
         else:
-            scaled_timings = self.timings / self.timings[relative_to]
-            plt.ylabel(f"Runtime relative to {self.labels[relative_to]}")
+            if automatic_order:
+                # Sort timings by the last entry. This makes the order in the legend
+                # correspond to the order of the lines.
+                order = numpy.argsort(self.timings[:, -1])
+                if relative_to is not None:
+                    relative_to = numpy.where(order == relative_to)[0][0]
+                self.timings = self.timings[order]
+                self.labels = [self.labels[i] for i in order]
+                self.colors = [self.colors[i] for i in order]
 
-        for t, label, color in zip(scaled_timings, self.labels, self.colors):
-            plotfun(self.n_range, t, label=label, color=color)
+            if relative_to is None:
+                flops = self.flop / self.timings / 1.0e-9
+                plt.ylabel("FLOPS")
+            else:
+                flops = self.timings[relative_to] / self.timings
+                # plt.ylim([0, 2])
+                plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
+
+            for fl, label, color in zip(flops, self.labels, self.colors):
+                plotfun(self.n_range, fl, label=label, color=color)
+
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if self.title:
@@ -126,6 +150,7 @@ def bench(
     setup,
     kernels,
     n_range,
+    flops=None,
     labels=None,
     colors=None,
     xlabel=None,
@@ -151,6 +176,8 @@ def bench(
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
     timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.uint64)
+
+    flop = None if flops is None else numpy.array([flops(n) for n in n_range])
 
     try:
         for i, n in enumerate(tqdm(n_range)):
@@ -188,7 +215,7 @@ def bench(
         timings = timings[:, :i]
         n_range = n_range[:i]
 
-    data = PerfplotData(n_range, timings, labels, colors, xlabel, title)
+    data = PerfplotData(n_range, timings, flop, labels, colors, xlabel, title)
     return data
 
 

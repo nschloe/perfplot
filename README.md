@@ -39,8 +39,9 @@ perfplot.show(
     # automatic_order=True,
     # colors=None,
     # target_time_per_measurement=1.0,
-    # time_unit="auto",  # set to one of ("s", "ms", "us", or "ns") to force plot units
+    # time_unit="s",  # set to one of ("auto", "s", "ms", "us", or "ns") to force plot units
     # relative_to=1,  # plot the timings relative to one of the measurements
+    # flops=lambda n: 3*n,  # FLOPS plots
 )
 ```
 produces

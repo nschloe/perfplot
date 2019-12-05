@@ -43,12 +43,10 @@ def test():
         logx=True,
         logy=True,
     )
-    return
 
 
 def test_no_labels():
     perfplot.plot(setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
-    return
 
 
 def test_automatic_scale():
@@ -82,6 +80,7 @@ def test_automatic_scale():
             colors=None,
             xlabel="",
             title="",
+            flop=None,
         )
         # Has the correct unit been applied to the y_label?
         data.plot(time_unit=time_unit)
@@ -100,4 +99,14 @@ def test_save():
         title="mytest",
         relative_to=0,
     )
-    return
+
+
+def test_flops():
+    perfplot.show(
+        setup=numpy.random.rand,
+        kernels=kernels,
+        labels=["c_"],
+        n_range=r,
+        xlabel="len(a)",
+        flops=lambda n: n,
+    )
