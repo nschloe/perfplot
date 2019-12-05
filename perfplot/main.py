@@ -135,7 +135,6 @@ class PerfplotData:
                 plt.ylabel("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                # plt.ylim([0, 2])
                 plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
             for fl, label, color in zip(flops, self.labels, self.colors):
@@ -145,6 +144,8 @@ class PerfplotData:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
+        if relative_to is not None:
+            plt.gca().set_ylim(bottom=0)
         plt.grid(True)
         plt.legend()
 
