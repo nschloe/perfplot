@@ -43,12 +43,10 @@ def test():
         logx=True,
         logy=True,
     )
-    return
 
 
 def test_no_labels():
     perfplot.plot(setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
-    return
 
 
 def test_automatic_scale():
@@ -100,4 +98,14 @@ def test_save():
         title="mytest",
         relative_to=0,
     )
-    return
+
+
+def test_flops():
+    perfplot.show(
+        setup=numpy.random.rand,
+        kernels=kernels,
+        labels=["c_"],
+        n_range=r,
+        xlabel="len(a)",
+        flops=lambda n: n,
+    )
