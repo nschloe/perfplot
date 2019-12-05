@@ -59,14 +59,30 @@ class PerfplotData:
         self.xlabel = xlabel
         self.title = title
 
-    def plot(
+    def plot(  # noqa: C901
         self,
         automatic_order=True,
         time_unit="s",
         relative_to=None,
-        logx=False,
-        logy=False,
+        logx="auto",
+        logy="auto",
     ):
+        if logx == "auto":
+            # Check if the x values are approximately equally spaced in log
+            log_n_range = numpy.log(self.n_range)
+            diff = log_n_range - numpy.linspace(
+                log_n_range[0], log_n_range[-1], len(log_n_range)
+            )
+            logx = numpy.all(numpy.abs(diff) < 1.0e-5)
+
+        if logy == "auto":
+            if relative_to is not None:
+                logy = False
+            elif self.flop is not None:
+                logy = False
+            else:
+                logy = logx
+
         # choose plot function
         if logx and logy:
             plotfun = plt.loglog
@@ -119,7 +135,6 @@ class PerfplotData:
                 plt.ylabel("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                # plt.ylim([0, 2])
                 plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
             for fl, label, color in zip(flops, self.labels, self.colors):
@@ -129,6 +144,8 @@ class PerfplotData:
             plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
+        if relative_to is not None:
+            plt.gca().set_ylim(bottom=0)
         plt.grid(True)
         plt.legend()
 
@@ -266,8 +283,8 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 def plot(
     *args,
     time_unit="s",
-    logx=False,
-    logy=False,
+    logx="auto",
+    logy="auto",
     relative_to=None,
     automatic_order=True,
     **kwargs,
@@ -286,8 +303,8 @@ def show(
     *args,
     time_unit="s",
     relative_to=None,
-    logx=False,
-    logy=False,
+    logx="auto",
+    logy="auto",
     automatic_order=True,
     **kwargs,
 ):
@@ -306,8 +323,8 @@ def save(
     transparent=True,
     *args,
     time_unit="s",
-    logx=False,
-    logy=False,
+    logx="auto",
+    logy="auto",
     relative_to=None,
     automatic_order=True,
     **kwargs,
