@@ -5,6 +5,6 @@ except ImportError:
     import importlib_metadata as metadata
 
 try:
-    __version__ = metadata.version("optimesh")
+    __version__ = metadata.version("perfplot")
 except Exception:
     __version__ = "unknown"
