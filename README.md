@@ -75,7 +75,7 @@ Other examples:
 perfplot is [available from the Python Package
 Index](https://pypi.org/project/perfplot/), so simply do
 ```
-pip3 install perfplot --user
+pip install perfplot
 ```
 to install or upgrade.
 
