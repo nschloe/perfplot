@@ -58,7 +58,7 @@ out = perfplot.bench(
     # same arguments as above
     )
 out.show()
-out.save("perf.png")
+out.save("perf.png", transparent=True, bbox_inches="tight")
 ```
 
 Other examples:
