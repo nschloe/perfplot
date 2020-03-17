@@ -53,8 +53,10 @@ class PerfplotData:
 
         self.colors = colors
         if self.colors is None:
-            prop_cycle = plt.rcParams["axes.prop_cycle"]
-            self.colors = prop_cycle.by_key()["color"][: len(self.labels)]
+            colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+            # extend colors list to fit all self.labels
+            colors *= -(-len(self.labels) // len(colors))
+            self.colors = colors[: len(self.labels)]
 
         self.xlabel = xlabel
         self.title = title
@@ -179,10 +181,12 @@ def bench(
         labels = [k.__name__ for k in kernels]
 
     if hasattr(time, "perf_counter_ns"):
+        # New in version 3.7:
         timer = time.perf_counter_ns
         is_ns_timer = True
         resolution = 1  # ns
     else:
+        # Remove once we only support 3.7+
         timer = time.perf_counter
         is_ns_timer = False
         # Estimate the timer resolution by measuring a no-op.
