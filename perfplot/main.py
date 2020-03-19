@@ -270,10 +270,10 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         # plt.show()
         tm //= number
 
+        factor = max_factor
         if min_timing > 0:
             factor = min(max_factor, required_timing / min_timing + allowance)
-        else:
-            factor = max_factor
+
         number = int(factor * number) + 1
 
     # Only return the minimum time; everthing else just measures
