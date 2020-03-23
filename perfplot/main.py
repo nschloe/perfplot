@@ -248,12 +248,6 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     required_timing = 10 * resolution
     min_timing = 0
 
-    # Adapt the number of runs for the next iteration such that the
-    # required_timing is just exceeded. If the required timing and
-    # minimal timing are just equal, `number` remains the same (up
-    # to an allowance of 0.2).
-    allowance = 0.2
-    max_factor = 100
     while min_timing <= required_timing:
         tm = numpy.array(
             timeit.repeat(
@@ -269,7 +263,12 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         # # plt.hist(tm)
         # plt.show()
         tm //= number
-
+        # Adapt the number of runs for the next iteration such that the
+        # required_timing is just exceeded. If the required timing and
+        # minimal timing are just equal, `number` remains the same (up
+        # to an allowance of 0.2).
+        allowance = 0.2
+        max_factor = 100
         factor = max_factor
         if min_timing > 0:
             factor = min(max_factor, required_timing / min_timing + allowance)
