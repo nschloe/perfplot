@@ -32,6 +32,8 @@ perfplot.show(
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
     n_range=[2 ** k for k in range(15)],
     xlabel="len(a)",
+    # logx=False,
+    # logy=False,
     # More optional arguments with their default values:
     # title=None,
     # logx="auto",  # set to True or False to force scaling
