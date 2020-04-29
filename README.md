@@ -32,12 +32,13 @@ perfplot.show(
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
     n_range=[2 ** k for k in range(15)],
     xlabel="len(a)",
+    # logx=False,
+    # logy=False,
     # More optional arguments with their default values:
     # title=None,
     # logx="auto",  # set to True or False to force scaling
     # logy="auto",
     # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
-    # automatic_order=True,
     # colors=None,
     # target_time_per_measurement=1.0,
     # time_unit="s",  # set to one of ("auto", "s", "ms", "us", or "ns") to force plot units
@@ -88,5 +89,4 @@ pytest
 ```
 
 ### License
-
-perfplot is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).

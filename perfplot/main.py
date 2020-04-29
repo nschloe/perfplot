@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
 
+import cleanplotlib as cpl
 import termtables as tt
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
@@ -62,12 +63,7 @@ class PerfplotData:
         self.title = title
 
     def plot(  # noqa: C901
-        self,
-        automatic_order=True,
-        time_unit="s",
-        relative_to=None,
-        logx="auto",
-        logy="auto",
+        self, time_unit="s", relative_to=None, logx="auto", logy="auto",
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
@@ -85,27 +81,7 @@ class PerfplotData:
             else:
                 logy = logx
 
-        # choose plot function
-        if logx and logy:
-            plotfun = plt.loglog
-        elif logx:
-            plotfun = plt.semilogx
-        elif logy:
-            plotfun = plt.semilogy
-        else:
-            plotfun = plt.plot
-
         if self.flop is None:
-            if automatic_order:
-                # Sort timings by the last entry. This makes the order in the legend
-                # correspond to the order of the lines.
-                order = numpy.argsort(self.timings[:, -1])[::-1]
-                if relative_to is not None:
-                    relative_to = numpy.where(order == relative_to)[0][0]
-                self.timings = self.timings[order]
-                self.labels = [self.labels[i] for i in order]
-                self.colors = [self.colors[i] for i in order]
-
             if relative_to is None:
                 # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
                 if time_unit == "auto":
@@ -114,42 +90,36 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                plt.ylabel(f"Runtime [{time_unit}]")
+                cpl.ylabel(f"Runtime [{time_unit}]")
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                plt.ylabel(f"Runtime relative to {self.labels[relative_to]}")
+                cpl.ylabel(f"Runtime relative to {self.labels[relative_to]}()")
 
-            for t, label, color in zip(scaled_timings, self.labels, self.colors):
-                plotfun(self.n_range, t, label=label, color=color)
+            cpl.multiplot(
+                [self.n_range] * len(scaled_timings),
+                scaled_timings,
+                self.labels,
+                logx=logx,
+                logy=logy,
+            )
         else:
-            if automatic_order:
-                # Sort timings by the last entry. This makes the order in the legend
-                # correspond to the order of the lines.
-                order = numpy.argsort(self.timings[:, -1])
-                if relative_to is not None:
-                    relative_to = numpy.where(order == relative_to)[0][0]
-                self.timings = self.timings[order]
-                self.labels = [self.labels[i] for i in order]
-                self.colors = [self.colors[i] for i in order]
-
             if relative_to is None:
                 flops = self.flop / self.timings / si_time["ns"]
-                plt.ylabel("FLOPS")
+                cpl.ylabel("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
+                cpl.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
-            for fl, label, color in zip(flops, self.labels, self.colors):
-                plotfun(self.n_range, fl, label=label, color=color)
+            cpl.multiplot(
+                [self.n_range] * len(flops), flops, self.labels, logx=logx, logy=logy
+            )
 
         if self.xlabel:
-            plt.xlabel(self.xlabel)
+            cpl.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        if relative_to is not None:
+        if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
-        plt.grid(True)
-        plt.legend()
 
     def show(self, **kwargs):
         self.plot(**kwargs)
@@ -271,7 +241,14 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         max_factor = 100
         factor = max_factor
         if min_timing > 0:
-            factor = min(max_factor, required_timing / min_timing + allowance)
+            # The next expression is
+            #   min(max_factor, required_timing / min_timing + allowance)
+            # with avoiding division by 0 if min_timing is too small.
+            factor = (
+                required_timing / min_timing + allowance
+                if min_timing > required_timing / (max_factor - allowance)
+                else max_factor
+            )
 
         number = int(factor * number) + 1
 
@@ -282,40 +259,20 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 # For backward compatibility:
 def plot(
-    *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
-    automatic_order=True,
-    **kwargs,
+    *args, time_unit="s", logx="auto", logy="auto", relative_to=None, **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.plot(
-        time_unit=time_unit,
-        logx=logx,
-        logy=logy,
-        relative_to=relative_to,
-        automatic_order=automatic_order,
+        time_unit=time_unit, logx=logx, logy=logy, relative_to=relative_to,
     )
 
 
 def show(
-    *args,
-    time_unit="s",
-    relative_to=None,
-    logx="auto",
-    logy="auto",
-    automatic_order=True,
-    **kwargs,
+    *args, time_unit="s", relative_to=None, logx="auto", logy="auto", **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.show(
-        time_unit=time_unit,
-        relative_to=relative_to,
-        logx=logx,
-        logy=logy,
-        automatic_order=automatic_order,
+        time_unit=time_unit, relative_to=relative_to, logx=logx, logy=logy,
     )
 
 
@@ -327,7 +284,6 @@ def save(
     logx="auto",
     logy="auto",
     relative_to=None,
-    automatic_order=True,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -338,5 +294,4 @@ def save(
         logx=logx,
         logy=logy,
         relative_to=relative_to,
-        automatic_order=automatic_order,
     )
