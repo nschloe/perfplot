@@ -51,18 +51,21 @@ def test_no_labels():
 
 
 # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
-@pytest.mark.parametrize("exp_unit, time_ns, time_unit", [
-    # Dealing w/ edge-case when timing < nanosecond
-    # ("ns", 0.125, "auto"),
-    # Almost a milisecond
-    ("us", 9.999e5, "auto"),
-    # Equal exactly to a milisecond
-    ("ms", 1e6, "auto"),
-    # Over 1 second
-    ("s", 1.5e9, "auto"),
-    # Checking if providing 's' for time_unit yields seconds
-    ("s", 1e9, "s"),
-])
+@pytest.mark.parametrize(
+    "exp_unit, time_ns, time_unit",
+    [
+        # Dealing w/ edge-case when timing < nanosecond
+        # ("ns", 0.125, "auto"),
+        # Almost a milisecond
+        ("us", 9.999e5, "auto"),
+        # Equal exactly to a milisecond
+        ("ms", 1e6, "auto"),
+        # Over 1 second
+        ("s", 1.5e9, "auto"),
+        # Checking if providing 's' for time_unit yields seconds
+        ("s", 1e9, "s"),
+    ],
+)
 def test_automatic_scale(exp_unit, time_ns, time_unit):
     from perfplot.main import PerfplotData
     import matplotlib.pyplot as plt

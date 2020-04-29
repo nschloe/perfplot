@@ -63,11 +63,7 @@ class PerfplotData:
         self.title = title
 
     def plot(  # noqa: C901
-        self,
-        time_unit="s",
-        relative_to=None,
-        logx="auto",
-        logy="auto",
+        self, time_unit="s", relative_to=None, logx="auto", logy="auto",
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
@@ -114,7 +110,9 @@ class PerfplotData:
                 flops = self.timings[relative_to] / self.timings
                 cpl.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
-            cpl.multiplot(self.n_range, flops, self.labels, logx=logx, logy=logy)
+            cpl.multiplot(
+                [self.n_range] * len(flops), flops, self.labels, logx=logx, logy=logy
+            )
 
         if self.xlabel:
             cpl.xlabel(self.xlabel)
@@ -261,36 +259,20 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 # For backward compatibility:
 def plot(
-    *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
-    **kwargs,
+    *args, time_unit="s", logx="auto", logy="auto", relative_to=None, **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.plot(
-        time_unit=time_unit,
-        logx=logx,
-        logy=logy,
-        relative_to=relative_to,
+        time_unit=time_unit, logx=logx, logy=logy, relative_to=relative_to,
     )
 
 
 def show(
-    *args,
-    time_unit="s",
-    relative_to=None,
-    logx="auto",
-    logy="auto",
-    **kwargs,
+    *args, time_unit="s", relative_to=None, logx="auto", logy="auto", **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.show(
-        time_unit=time_unit,
-        relative_to=relative_to,
-        logx=logx,
-        logy=logy,
+        time_unit=time_unit, relative_to=relative_to, logx=logx, logy=logy,
     )
 
 
