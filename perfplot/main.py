@@ -120,7 +120,7 @@ class PerfplotData:
             cpl.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
-        if relative_to is not None:
+        if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
 
     def show(self, **kwargs):
