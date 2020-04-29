@@ -2,11 +2,11 @@ import sys
 import time
 import timeit
 
-import cleanplotlib as cpl
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
 
+import cleanplotlib as cpl
 import termtables as tt
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
@@ -112,7 +112,10 @@ class PerfplotData:
 
             cpl.multiplot(
                 [self.n_range] * len(scaled_timings),
-                scaled_timings, self.labels, logx=logx, logy=logy
+                scaled_timings,
+                self.labels,
+                logx=logx,
+                logy=logy,
             )
         else:
             if automatic_order:
