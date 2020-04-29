@@ -64,7 +64,6 @@ class PerfplotData:
 
     def plot(  # noqa: C901
         self,
-        automatic_order=True,
         time_unit="s",
         relative_to=None,
         logx="auto",
@@ -87,16 +86,6 @@ class PerfplotData:
                 logy = logx
 
         if self.flop is None:
-            if automatic_order:
-                # Sort timings by the last entry. This makes the order in the legend
-                # correspond to the order of the lines.
-                order = numpy.argsort(self.timings[:, -1])[::-1]
-                if relative_to is not None:
-                    relative_to = numpy.where(order == relative_to)[0][0]
-                self.timings = self.timings[order]
-                self.labels = [self.labels[i] for i in order]
-                self.colors = [self.colors[i] for i in order]
-
             if relative_to is None:
                 # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
                 if time_unit == "auto":
@@ -118,16 +107,6 @@ class PerfplotData:
                 logy=logy,
             )
         else:
-            if automatic_order:
-                # Sort timings by the last entry. This makes the order in the legend
-                # correspond to the order of the lines.
-                order = numpy.argsort(self.timings[:, -1])
-                if relative_to is not None:
-                    relative_to = numpy.where(order == relative_to)[0][0]
-                self.timings = self.timings[order]
-                self.labels = [self.labels[i] for i in order]
-                self.colors = [self.colors[i] for i in order]
-
             if relative_to is None:
                 flops = self.flop / self.timings / si_time["ns"]
                 cpl.ylabel("FLOPS")
@@ -287,7 +266,6 @@ def plot(
     logx="auto",
     logy="auto",
     relative_to=None,
-    automatic_order=True,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -296,7 +274,6 @@ def plot(
         logx=logx,
         logy=logy,
         relative_to=relative_to,
-        automatic_order=automatic_order,
     )
 
 
@@ -306,7 +283,6 @@ def show(
     relative_to=None,
     logx="auto",
     logy="auto",
-    automatic_order=True,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -315,7 +291,6 @@ def show(
         relative_to=relative_to,
         logx=logx,
         logy=logy,
-        automatic_order=automatic_order,
     )
 
 
@@ -327,7 +302,6 @@ def save(
     logx="auto",
     logy="auto",
     relative_to=None,
-    automatic_order=True,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -338,5 +312,4 @@ def save(
         logx=logx,
         logy=logy,
         relative_to=relative_to,
-        automatic_order=automatic_order,
     )
