@@ -127,10 +127,10 @@ class PerfplotData:
 
             if relative_to is None:
                 flops = self.flop / self.timings / 1.0e-9
-                plt.ylabel("FLOPS")
+                cpl.ylabel("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
+                cpl.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
             cpl.multiplot(self.n_range, flops, self.labels, logx=logx, logy=logy)
 
