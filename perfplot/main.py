@@ -2,6 +2,7 @@ import sys
 import time
 import timeit
 
+import cleanplotlib as cpl
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
@@ -85,16 +86,6 @@ class PerfplotData:
             else:
                 logy = logx
 
-        # choose plot function
-        if logx and logy:
-            plotfun = plt.loglog
-        elif logx:
-            plotfun = plt.semilogx
-        elif logy:
-            plotfun = plt.semilogy
-        else:
-            plotfun = plt.plot
-
         if self.flop is None:
             if automatic_order:
                 # Sort timings by the last entry. This makes the order in the legend
@@ -114,13 +105,15 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                plt.ylabel(f"Runtime [{time_unit}]")
+                cpl.ylabel(f"Runtime [{time_unit}]")
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                plt.ylabel(f"Runtime relative to {self.labels[relative_to]}")
+                cpl.ylabel(f"Runtime relative to {self.labels[relative_to]}()")
 
-            for t, label, color in zip(scaled_timings, self.labels, self.colors):
-                plotfun(self.n_range, t, label=label, color=color)
+            cpl.multiplot(
+                [self.n_range] * len(scaled_timings),
+                scaled_timings, self.labels, logx=logx, logy=logy
+            )
         else:
             if automatic_order:
                 # Sort timings by the last entry. This makes the order in the legend
@@ -139,17 +132,14 @@ class PerfplotData:
                 flops = self.timings[relative_to] / self.timings
                 plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
-            for fl, label, color in zip(flops, self.labels, self.colors):
-                plotfun(self.n_range, fl, label=label, color=color)
+            cpl.multiplot(self.n_range, flops, self.labels, logx=logx, logy=logy)
 
         if self.xlabel:
-            plt.xlabel(self.xlabel)
+            cpl.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
         if relative_to is not None:
             plt.gca().set_ylim(bottom=0)
-        plt.grid(True)
-        plt.legend()
 
     def show(self, **kwargs):
         self.plot(**kwargs)
