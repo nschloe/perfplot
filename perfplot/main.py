@@ -264,7 +264,14 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         max_factor = 100
         factor = max_factor
         if min_timing > 0:
-            factor = min(max_factor, required_timing / min_timing + allowance)
+            # The next expression is
+            #   min(max_factor, required_timing / min_timing + allowance)
+            # with avoiding division by 0 if min_timing is too small.
+            factor = (
+                required_timing / min_timing + allowance
+                if min_timing > required_timing / (max_factor - allowance)
+                else max_factor
+            )
 
         number = int(factor * number) + 1
 
