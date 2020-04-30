@@ -2,12 +2,15 @@ import sys
 import time
 import timeit
 
+import dufte
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy
 from tqdm import tqdm
 
-import cleanplotlib as cpl
 import termtables as tt
+
+matplotlib.style.use(dufte.style)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
@@ -81,6 +84,15 @@ class PerfplotData:
             else:
                 logy = logx
 
+        if logx and logy:
+            plotfun = plt.loglog
+        elif logx:
+            plotfun = plt.semilogx
+        elif logy:
+            plotfun = plt.semilogy
+        else:
+            plotfun = plt.plot
+
         if self.flop is None:
             if relative_to is None:
                 # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
@@ -90,36 +102,32 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                cpl.ylabel(f"Runtime [{time_unit}]")
+                plt.ylabel(f"Runtime [{time_unit}]")
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                cpl.ylabel(f"Runtime relative to {self.labels[relative_to]}()")
+                plt.ylabel(f"Runtime relative to {self.labels[relative_to]}()")
 
-            cpl.multiplot(
-                [self.n_range] * len(scaled_timings),
-                scaled_timings,
-                self.labels,
-                logx=logx,
-                logy=logy,
-            )
+            for t, label in zip(scaled_timings, self.labels):
+                plotfun(self.n_range, t, label=label)
         else:
             if relative_to is None:
                 flops = self.flop / self.timings / si_time["ns"]
-                cpl.ylabel("FLOPS")
+                plt.ylabel("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                cpl.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
+                plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
 
-            cpl.multiplot(
-                [self.n_range] * len(flops), flops, self.labels, logx=logx, logy=logy
-            )
+            for fl, label in zip(flops, self.labels):
+                plotfun(self.n_range, fl, label=label)
 
         if self.xlabel:
-            cpl.xlabel(self.xlabel)
+            plt.xlabel(self.xlabel)
         if self.title:
             plt.title(self.title)
         if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
+
+        dufte.legend()
 
     def show(self, **kwargs):
         self.plot(**kwargs)
