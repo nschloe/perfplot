@@ -2,7 +2,7 @@
   <img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%">
 </p>
 
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/perfplot/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/perfplot/tree/master)
+[![gh-actions](https://img.shields.io/github/workflow/status/nschloe/perfplot/ci?style=flat-square)](https://github.com/nschloe/perfplot/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg?style=flat-square)](https://codecov.io/gh/nschloe/perfplot)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/perfplot.svg?style=flat-square)](https://pypi.org/pypi/perfplot/)
