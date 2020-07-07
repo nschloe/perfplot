@@ -57,7 +57,7 @@ Benchmarking and plotting can be separated, too. This allows multiple plots of t
 data, for example:
 ```python
 out = perfplot.bench(
-    # same arguments as above
+    # same arguments as above (except the plot-related ones, like time_unit or log*)
     )
 out.show()
 out.save("perf.png", transparent=True, bbox_inches="tight")
