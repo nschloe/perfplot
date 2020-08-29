@@ -67,9 +67,11 @@ def test_no_labels():
     ],
 )
 def test_automatic_scale(exp_unit, time_ns, time_unit):
-    from perfplot.main import PerfplotData
-    import matplotlib.pyplot as plt
     import re
+
+    import matplotlib.pyplot as plt
+
+    from perfplot.main import PerfplotData
 
     # Regular Expression that retrieves the plot unit from label
     unit_re = re.compile(r"\[([musn]?[s])\]")

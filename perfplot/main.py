@@ -6,9 +6,8 @@ import dufte
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy
-from tqdm import tqdm
-
 import termtables as tt
+from tqdm import tqdm
 
 matplotlib.style.use(dufte.style)
 
@@ -27,7 +26,7 @@ if sys.version_info < (3, 7):
 
 
 def _auto_time_unit(min_time_ns):
-    """ Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
+    """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
     execution time into SI second and iterating over the plausible SI time units (s, ms,
     us, ns) to find the first one whos magnitude is smaller than the minimum execution
@@ -48,7 +47,14 @@ def _auto_time_unit(min_time_ns):
 
 class PerfplotData:
     def __init__(
-        self, n_range, timings, flop, labels, colors, xlabel, title,
+        self,
+        n_range,
+        timings,
+        flop,
+        labels,
+        colors,
+        xlabel,
+        title,
     ):
         self.n_range = n_range
         self.timings = timings
@@ -66,7 +72,11 @@ class PerfplotData:
         self.title = title
 
     def plot(  # noqa: C901
-        self, time_unit="s", relative_to=None, logx="auto", logy="auto",
+        self,
+        time_unit="s",
+        relative_to=None,
+        logx="auto",
+        logy="auto",
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
@@ -267,20 +277,36 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
 # For backward compatibility:
 def plot(
-    *args, time_unit="s", logx="auto", logy="auto", relative_to=None, **kwargs,
+    *args,
+    time_unit="s",
+    logx="auto",
+    logy="auto",
+    relative_to=None,
+    **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.plot(
-        time_unit=time_unit, logx=logx, logy=logy, relative_to=relative_to,
+        time_unit=time_unit,
+        logx=logx,
+        logy=logy,
+        relative_to=relative_to,
     )
 
 
 def show(
-    *args, time_unit="s", relative_to=None, logx="auto", logy="auto", **kwargs,
+    *args,
+    time_unit="s",
+    relative_to=None,
+    logx="auto",
+    logy="auto",
+    **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.show(
-        time_unit=time_unit, relative_to=relative_to, logx=logx, logy=logy,
+        time_unit=time_unit,
+        relative_to=relative_to,
+        logx=logx,
+        logy=logy,
     )
 
 
