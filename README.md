@@ -57,6 +57,7 @@ Clearly, `stack` and `vstack` are the best options for large arrays.
 
 Benchmarking and plotting can be separated, too. This allows multiple plots of the same
 data, for example:
+<!--exdown-skip-->
 ```python
 out = perfplot.bench(
     # same arguments as above (except the plot-related ones, like time_unit or log*)
