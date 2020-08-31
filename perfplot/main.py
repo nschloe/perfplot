@@ -164,7 +164,7 @@ def bench(
     title=None,
     target_time_per_measurement=1.0,
     equality_check=numpy.allclose,
-    show_progress=True
+    show_progress=True,
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -196,7 +196,9 @@ def bench(
             data = setup(n)
             if equality_check:
                 relative_to = kernels[0](data)
-            for k, kernel in enumerate(progress(kernels, leave=(i == len(n_range) - 1))):
+            for k, kernel in enumerate(
+                progress(kernels, leave=(i == len(n_range) - 1))
+            ):
                 if equality_check:
                     assert kernel(data) is not None, "{} returned None".format(
                         labels[k]
