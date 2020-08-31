@@ -164,6 +164,7 @@ def bench(
     title=None,
     target_time_per_measurement=1.0,
     equality_check=numpy.allclose,
+    show_progress=True,
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -188,12 +189,16 @@ def bench(
 
     flop = None if flops is None else numpy.array([flops(n) for n in n_range])
 
+    progress = tqdm if show_progress else lambda x, leave=None: x
+
     try:
-        for i, n in enumerate(tqdm(n_range)):
+        for i, n in enumerate(progress(n_range)):
             data = setup(n)
             if equality_check:
                 relative_to = kernels[0](data)
-            for k, kernel in enumerate(tqdm(kernels, leave=(i == len(n_range) - 1))):
+            for k, kernel in enumerate(
+                progress(kernels, leave=(i == len(n_range) - 1))
+            ):
                 if equality_check:
                     assert kernel(data) is not None, "{} returned None".format(
                         labels[k]
