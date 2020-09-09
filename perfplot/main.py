@@ -1,3 +1,4 @@
+import io
 import sys
 import time
 import timeit
@@ -6,8 +7,9 @@ import dufte
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy
-import termtables as tt
+from rich.console import Console
 from rich.progress import Progress
+from rich.table import Table
 
 matplotlib.style.use(dufte.style)
 
@@ -149,8 +151,19 @@ class PerfplotData:
         plt.close()
 
     def __repr__(self):
-        data = numpy.column_stack([self.n_range, self.timings.T])
-        return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
+        table = Table(show_header=True)
+        table.add_column("n")
+        for label in self.labels:
+            table.add_column(label)
+
+        for n, t in zip(self.n_range, self.timings.T):
+            lst = [str(n)] + [str(tt) for tt in t]
+            table.add_row(*lst)
+
+        f = io.StringIO()
+        console = Console(file=f)
+        console.print(table)
+        return f.getvalue()
 
 
 def bench(
