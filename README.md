@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%">
+  <a href="https://github.com/nschloe/perfplothio"><img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%"></a>
 </p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg?style=flat-square)](https://pypi.org/project/perfplot)
@@ -9,13 +9,12 @@
 
 [![gh-actions](https://img.shields.io/github/workflow/status/nschloe/perfplot/ci?style=flat-square)](https://github.com/nschloe/perfplot/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/perfplot.svg?style=flat-square)](https://codecov.io/gh/nschloe/perfplot)
- [![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/perfplot.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/perfplot)
+[![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/perfplot.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/perfplot)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
 perfplot extends Python's [timeit](https://docs.python.org/3/library/timeit.html) by
 testing snippets with input parameters (e.g., the size of an array) and plotting the
-results.  (By default, perfplot asserts the equality of the output of all snippets,
-too.)
+results.
 
 For example, to compare different NumPy array concatenation methods, the script
 ```python
@@ -56,8 +55,10 @@ produces
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
 
-Benchmarking and plotting can be separated, too. This allows multiple plots of the same
-data, for example:
+(By default, perfplot asserts the equality of the output of all snippets, too.)
+
+Benchmarking and plotting can be separated. This allows multiple plots of the same data,
+for example:
 <!--exdown-skip-->
 ```python
 out = perfplot.bench(
