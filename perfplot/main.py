@@ -1,3 +1,4 @@
+import io
 import sys
 import time
 import timeit
@@ -6,8 +7,9 @@ import dufte
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy
-import termtables as tt
-from tqdm import tqdm
+from rich.console import Console
+from rich.progress import Progress
+from rich.table import Table
 
 matplotlib.style.use(dufte.style)
 
@@ -149,8 +151,19 @@ class PerfplotData:
         plt.close()
 
     def __repr__(self):
-        data = numpy.column_stack([self.n_range, self.timings.T])
-        return tt.to_string(data, header=["n"] + self.labels, style=None, alignment="r")
+        table = Table(show_header=True)
+        table.add_column("n")
+        for label in self.labels:
+            table.add_column(label)
+
+        for n, t in zip(self.n_range, self.timings.T):
+            lst = [str(n)] + [str(tt) for tt in t]
+            table.add_row(*lst)
+
+        f = io.StringIO()
+        console = Console(file=f)
+        console.print(table)
+        return f.getvalue()
 
 
 def bench(
@@ -189,45 +202,56 @@ def bench(
 
     flop = None if flops is None else numpy.array([flops(n) for n in n_range])
 
-    progress = tqdm if show_progress else lambda x, leave=None: x
-
-    try:
-        for i, n in enumerate(progress(n_range)):
-            data = setup(n)
-            if equality_check:
-                relative_to = kernels[0](data)
-            for k, kernel in enumerate(
-                progress(kernels, leave=(i == len(n_range) - 1))
-            ):
+    with Progress() as progress:
+        try:
+            if show_progress:
+                task1 = progress.add_task("Overall", total=len(n_range))
+                task2 = progress.add_task("Kernels", total=len(kernels))
+            for i, n in enumerate(n_range):
+                data = setup(n)
                 if equality_check:
-                    assert kernel(data) is not None, "{} returned None".format(
-                        labels[k]
+                    relative_to = kernels[0](data)
+
+                if show_progress:
+                    progress.update(task2, completed=0)
+                for k, kernel in enumerate(kernels):
+                    if equality_check:
+                        assert kernel(data) is not None, "{} returned None".format(
+                            labels[k]
+                        )
+                        assert equality_check(
+                            relative_to, kernel(data)
+                        ), "Equality check failure. ({}, {})".format(
+                            labels[0], labels[k]
+                        )
+
+                    # First try with one repetition only. If this doesn't exceed the target
+                    # time, append as many repeats as the first measurements suggests.
+                    # If the kernel is fast, the measurement with one repetition only can
+                    # be somewhat off, but most of the time it's good enough.
+                    remaining_time = int(target_time_per_measurement / si_time["ns"])
+
+                    repeat = 1
+                    t, total_time = _b(
+                        data, kernel, repeat, timer, is_ns_timer, resolution
                     )
-                    assert equality_check(
-                        relative_to, kernel(data)
-                    ), "Equality check failure. ({}, {})".format(labels[0], labels[k])
+                    time_per_repetition = total_time / repeat
 
-                # First try with one repetition only. If this doesn't exceed the target
-                # time, append as many repeats as the first measurements suggests.
-                # If the kernel is fast, the measurement with one repetition only can
-                # be somewhat off, but most of the time it's good enough.
-                remaining_time = int(target_time_per_measurement / si_time["ns"])
+                    remaining_time -= total_time
+                    repeat = int(remaining_time // time_per_repetition)
+                    if repeat > 0:
+                        t2, _ = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                        t = min(t, t2)
 
-                repeat = 1
-                t, total_time = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
-                time_per_repetition = total_time / repeat
+                    timings[k, i] = t
+                    if show_progress:
+                        progress.update(task2, advance=1)
+                if show_progress:
+                    progress.update(task1, advance=1)
 
-                remaining_time -= total_time
-                repeat = int(remaining_time // time_per_repetition)
-                if repeat > 0:
-                    t2, _ = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
-                    t = min(t, t2)
-
-                timings[k, i] = t
-
-    except KeyboardInterrupt:
-        timings = timings[:, :i]
-        n_range = n_range[:i]
+        except KeyboardInterrupt:
+            timings = timings[:, :i]
+            n_range = n_range[:i]
 
     data = PerfplotData(n_range, timings, flop, labels, colors, xlabel, title)
     return data
