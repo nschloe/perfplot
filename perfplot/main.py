@@ -54,7 +54,6 @@ class PerfplotData:
         timings,
         flop,
         labels,
-        colors,
         xlabel,
         title,
     ):
@@ -62,14 +61,6 @@ class PerfplotData:
         self.timings = timings
         self.flop = flop
         self.labels = labels
-
-        self.colors = colors
-        if self.colors is None:
-            colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-            # extend colors list to fit all self.labels
-            colors *= -(-len(self.labels) // len(colors))
-            self.colors = colors[: len(self.labels)]
-
         self.xlabel = xlabel
         self.title = title
 
@@ -172,7 +163,6 @@ def bench(
     n_range,
     flops=None,
     labels=None,
-    colors=None,
     xlabel=None,
     title=None,
     target_time_per_measurement=1.0,
@@ -253,7 +243,7 @@ def bench(
             timings = timings[:, :i]
             n_range = n_range[:i]
 
-    data = PerfplotData(n_range, timings, flop, labels, colors, xlabel, title)
+    data = PerfplotData(n_range, timings, flop, labels, xlabel, title)
     return data
 
 
