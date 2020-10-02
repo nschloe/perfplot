@@ -41,7 +41,6 @@ perfplot.show(
     # logy="auto",
     # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
     # show_progress=True,
-    # colors=None,
     # target_time_per_measurement=1.0,
     # time_unit="s",  # set to one of ("auto", "s", "ms", "us", or "ns") to force plot units
     # relative_to=1,  # plot the timings relative to one of the measurements

@@ -81,7 +81,6 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
         # Converting timings to ns
         timings=numpy.full((1, 1), time_ns, dtype=numpy.uint64),
         labels=["."],  # Suppress no handle error # TODO fix this
-        colors=None,
         xlabel="",
         title="",
         flop=None,
