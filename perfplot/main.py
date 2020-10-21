@@ -203,7 +203,7 @@ def bench(
                     relative_to = kernels[0](data)
 
                 if show_progress:
-                    progress.update(task2, completed=0)
+                    progress.reset(task2)
                 for k, kernel in enumerate(kernels):
                     if equality_check:
                         assert kernel(data) is not None, "{} returned None".format(
