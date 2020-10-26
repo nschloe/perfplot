@@ -55,14 +55,12 @@ class PerfplotData:
         flop,
         labels,
         xlabel,
-        title,
     ):
         self.n_range = n_range
         self.timings = timings
         self.flop = flop
         self.labels = labels
         self.xlabel = xlabel
-        self.title = title
 
     def plot(  # noqa: C901
         self,
@@ -106,28 +104,26 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                plt.ylabel(f"Runtime [{time_unit}]")
+                plt.title(f"Runtime [{time_unit}]")
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                plt.ylabel(f"Runtime relative to {self.labels[relative_to]}()")
+                plt.title(f"Runtime relative to {self.labels[relative_to]}()")
 
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
         else:
             if relative_to is None:
                 flops = self.flop / self.timings / si_time["ns"]
-                plt.ylabel("FLOPS")
+                plt.title("FLOPS")
             else:
                 flops = self.timings[relative_to] / self.timings
-                plt.ylabel(f"FLOPS relative to {self.labels[relative_to]}")
+                plt.title(f"FLOPS relative to {self.labels[relative_to]}")
 
             for fl, label in zip(flops, self.labels):
                 plotfun(self.n_range, fl, label=label)
 
         if self.xlabel:
             plt.xlabel(self.xlabel)
-        if self.title:
-            plt.title(self.title)
         if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
 
@@ -165,7 +161,6 @@ def bench(
     flops=None,
     labels=None,
     xlabel=None,
-    title=None,
     target_time_per_measurement=1.0,
     equality_check=numpy.allclose,
     show_progress=True,
@@ -249,7 +244,7 @@ def bench(
             timings = timings[:, :i]
             n_range = n_range[:i]
 
-    data = PerfplotData(n_range, timings, flop, labels, xlabel, title)
+    data = PerfplotData(n_range, timings, flop, labels, xlabel)
     return data
 
 

@@ -31,12 +31,11 @@ perfplot.show(
         lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1),
     ],
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
-    n_range=[2 ** k for k in range(15)],
+    n_range=[2 ** k for k in range(25)],
     xlabel="len(a)",
     # logx=False,
     # logy=False,
     # More optional arguments with their default values:
-    # title=None,
     # logx="auto",  # set to True or False to force scaling
     # logy="auto",
     # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
