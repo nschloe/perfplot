@@ -31,7 +31,7 @@ perfplot.show(
         lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1),
     ],
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
-    n_range=[2 ** k for k in range(15)],
+    n_range=[2 ** k for k in range(25)],
     xlabel="len(a)",
     # logx=False,
     # logy=False,
