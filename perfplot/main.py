@@ -98,7 +98,8 @@ class PerfplotData:
 
         if self.flop is None:
             if relative_to is None:
-                # Set time unit of plots. Allowed values: ("s", "ms", "us", "ns", "auto")
+                # Set time unit of plots.
+                # Allowed values: ("s", "ms", "us", "ns", "auto")
                 if time_unit == "auto":
                     time_unit = _auto_time_unit(numpy.min(self.timings))
                 else:
@@ -206,19 +207,24 @@ def bench(
                     progress.reset(task2)
                 for k, kernel in enumerate(kernels):
                     if equality_check:
-                        assert kernel(data) is not None, "{} returned None".format(
-                            labels[k]
-                        )
-                        assert equality_check(
-                            relative_to, kernel(data)
-                        ), "Equality check failure. ({}, {})".format(
-                            labels[0], labels[k]
-                        )
+                        try:
+                            is_equal = equality_check(relative_to, kernel(data))
+                        except TypeError:
+                            print(
+                                "Error in equality_check. "
+                                "Try setting equality_check=None."
+                            )
+                            raise
+                        else:
+                            assert (
+                                is_equal
+                            ), f"Equality check failure. ({labels[0]}, {labels[k]})"
 
-                    # First try with one repetition only. If this doesn't exceed the target
-                    # time, append as many repeats as the first measurements suggests.
-                    # If the kernel is fast, the measurement with one repetition only can
-                    # be somewhat off, but most of the time it's good enough.
+                    # First try with one repetition only. If this doesn't exceed the
+                    # target time, append as many repeats as the first measurements
+                    # suggests.  If the kernel is fast, the measurement with one
+                    # repetition only can be somewhat off, but most of the time it's
+                    # good enough.
                     remaining_time = int(target_time_per_measurement / si_time["ns"])
 
                     repeat = 1
@@ -248,9 +254,9 @@ def bench(
 
 
 def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
-    # Make sure that the statement is executed at least so often that the
-    # timing exceeds 10 times the resolution of the clock. `number` is larger
-    # than 1 only for the fastest computations. Hardly ever happens.
+    # Make sure that the statement is executed at least so often that the timing exceeds
+    # 10 times the resolution of the clock. `number` is larger than 1 only for the
+    # fastest computations. Hardly ever happens.
     number = 1
     required_timing = 10 * resolution
     min_timing = 0
@@ -270,10 +276,9 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         # # plt.hist(tm)
         # plt.show()
         tm //= number
-        # Adapt the number of runs for the next iteration such that the
-        # required_timing is just exceeded. If the required timing and
-        # minimal timing are just equal, `number` remains the same (up
-        # to an allowance of 0.2).
+        # Adapt the number of runs for the next iteration such that the required_timing
+        # is just exceeded. If the required timing and minimal timing are just equal,
+        # `number` remains the same (up to an allowance of 0.2).
         allowance = 0.2
         max_factor = 100
         factor = max_factor
@@ -289,8 +294,8 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
         number = int(factor * number) + 1
 
-    # Only return the minimum time; everthing else just measures
-    # how slow the system can go.
+    # Only return the minimum time; everthing else just measures how slow the system can
+    # go.
     return numpy.min(tm), numpy.sum(tm)
 
 
