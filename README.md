@@ -36,7 +36,6 @@ perfplot.show(
     # logx=False,
     # logy=False,
     # More optional arguments with their default values:
-    # title=None,
     # logx="auto",  # set to True or False to force scaling
     # logy="auto",
     # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion

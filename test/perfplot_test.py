@@ -82,13 +82,12 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
         timings=numpy.full((1, 1), time_ns, dtype=numpy.uint64),
         labels=["."],  # Suppress no handle error # TODO fix this
         xlabel="",
-        title="",
         flop=None,
     )
     # Has the correct unit been applied to the y_label?
     data.plot(time_unit=time_unit)
     ax = plt.gca()
-    plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
+    plot_unit = unit_re.search(ax.get_title()).groups()[0]
     assert plot_unit == exp_unit
 
 
@@ -99,7 +98,6 @@ def test_save():
         kernels=kernels,
         n_range=r,
         xlabel="len(a)",
-        title="mytest",
         relative_to=0,
     )
 
