@@ -11,6 +11,8 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
+from .exceptions import PerfplotError
+
 matplotlib.style.use(dufte.style)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
@@ -209,15 +211,16 @@ def bench(
                             try:
                                 is_equal = equality_check(reference, kernel(data))
                             except TypeError:
-                                print(
+                                raise PerfplotError(
                                     "Error in equality_check. "
                                     "Try setting equality_check=None."
                                 )
-                                raise
                             else:
-                                assert (
-                                    is_equal
-                                ), f"Equality check failure. ({labels[0]}, {labels[k]})"
+                                if not is_equal:
+                                    raise PerfplotError(
+                                        "Equality check failure. "
+                                        f"({labels[0]}, {labels[k]})"
+                                    )
 
                     # First try with one repetition only. If this doesn't exceed the
                     # target time, append as many repetitions as the first measurement
