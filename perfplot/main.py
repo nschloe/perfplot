@@ -197,25 +197,27 @@ def bench(
                 task2 = progress.add_task("Kernels", total=len(kernels))
             for i, n in enumerate(n_range):
                 data = setup(n)
-                if equality_check:
-                    relative_to = kernels[0](data)
 
                 if show_progress:
                     progress.reset(task2)
+
                 for k, kernel in enumerate(kernels):
                     if equality_check:
-                        try:
-                            is_equal = equality_check(relative_to, kernel(data))
-                        except TypeError:
-                            print(
-                                "Error in equality_check. "
-                                "Try setting equality_check=None."
-                            )
-                            raise
+                        if k == 0:
+                            reference = kernel(data)
                         else:
-                            assert (
-                                is_equal
-                            ), f"Equality check failure. ({labels[0]}, {labels[k]})"
+                            try:
+                                is_equal = equality_check(reference, kernel(data))
+                            except TypeError:
+                                print(
+                                    "Error in equality_check. "
+                                    "Try setting equality_check=None."
+                                )
+                                raise
+                            else:
+                                assert (
+                                    is_equal
+                                ), f"Equality check failure. ({labels[0]}, {labels[k]})"
 
                     # First try with one repetition only. If this doesn't exceed the
                     # target time, append as many repetitions as the first measurement
