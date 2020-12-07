@@ -41,9 +41,11 @@ def _auto_time_unit(min_time_ns):
     """
     # Converting minimum timing into seconds from nanoseconds
     t_s = min_time_ns * si_time["ns"]
+    time_unit = None
     for time_unit, magnitude in si_time.items():
         if t_s >= magnitude:
             break
+    assert time_unit is not None
     return time_unit
 
 
@@ -216,8 +218,8 @@ def bench(
                             ), f"Equality check failure. ({labels[0]}, {labels[k]})"
 
                     # First try with one repetition only. If this doesn't exceed the
-                    # target time, append as many repeats as the first measurements
-                    # suggests.  If the kernel is fast, the measurement with one
+                    # target time, append as many repetitions as the first measurement
+                    # suggests. If the kernel is fast, the measurement with one
                     # repetition only can be somewhat off, but most of the time it's
                     # good enough.
                     remaining_time = int(target_time_per_measurement / si_time["ns"])
@@ -255,6 +257,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     number = 1
     required_timing = 10 * resolution
     min_timing = 0
+    tm = None
 
     while min_timing <= required_timing:
         tm = numpy.array(
@@ -289,6 +292,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 
         number = int(factor * number) + 1
 
+    assert tm is not None
     # Only return the minimum time; everthing else just measures how slow the system can
     # go.
     return numpy.min(tm), numpy.sum(tm)
