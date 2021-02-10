@@ -1,15 +1,15 @@
-import numpy
+import numpy as np
 import pytest
 
 import perfplot
 
-kernels = [lambda a: numpy.c_[a, a]]
+kernels = [lambda a: np.c_[a, a]]
 r = [2 ** k for k in range(4)]
 
 
 def test():
     perfplot.show(
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
@@ -17,7 +17,7 @@ def test():
     )
 
     perfplot.show(
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
@@ -27,7 +27,7 @@ def test():
     )
 
     out = perfplot.bench(
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
@@ -36,7 +36,7 @@ def test():
     print(out)
 
     perfplot.show(
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
@@ -47,7 +47,7 @@ def test():
 
 
 def test_no_labels():
-    perfplot.plot(setup=numpy.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
+    perfplot.plot(setup=np.random.rand, kernels=kernels, n_range=r, xlabel="len(a)")
 
 
 # (expected_unit, time in nanoseconds, expected_timing, time_unit) format
@@ -79,7 +79,7 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
     data = PerfplotData(
         n_range=[1],
         # Converting timings to ns
-        timings=numpy.full((1, 1), time_ns, dtype=numpy.uint64),
+        timings=np.full((1, 1), time_ns, dtype=np.uint64),
         labels=["."],  # Suppress no handle error # TODO fix this
         xlabel="",
         flop=None,
@@ -94,7 +94,7 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
 def test_save():
     perfplot.save(
         "out.png",
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         n_range=r,
         xlabel="len(a)",
@@ -104,7 +104,7 @@ def test_save():
 
 def test_flops():
     perfplot.show(
-        setup=numpy.random.rand,
+        setup=np.random.rand,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
