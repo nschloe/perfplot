@@ -60,7 +60,7 @@ class PerfplotData:
         labels,
         xlabel,
     ):
-        self.n_range = n_range
+        self.n_range = numpy.asarray(n_range)
         self.timings = timings
         self.flop = flop
         self.labels = labels
@@ -75,11 +75,14 @@ class PerfplotData:
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
-            log_n_range = numpy.log(self.n_range)
-            diff = log_n_range - numpy.linspace(
-                log_n_range[0], log_n_range[-1], len(log_n_range)
-            )
-            logx = numpy.all(numpy.abs(diff) < 1.0e-5)
+            if numpy.any(self.n_range <= 0):
+                logx = False
+            else:
+                log_n_range = numpy.log(self.n_range)
+                diff = log_n_range - numpy.linspace(
+                    log_n_range[0], log_n_range[-1], len(log_n_range)
+                )
+                logx = numpy.all(numpy.abs(diff) < 1.0e-5)
 
         if logy == "auto":
             if relative_to is not None:
