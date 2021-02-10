@@ -6,7 +6,7 @@ import timeit
 import dufte
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
@@ -60,7 +60,7 @@ class PerfplotData:
         labels,
         xlabel,
     ):
-        self.n_range = n_range
+        self.n_range = np.asarray(n_range)
         self.timings = timings
         self.flop = flop
         self.labels = labels
@@ -75,11 +75,14 @@ class PerfplotData:
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
-            log_n_range = numpy.log(self.n_range)
-            diff = log_n_range - numpy.linspace(
-                log_n_range[0], log_n_range[-1], len(log_n_range)
-            )
-            logx = numpy.all(numpy.abs(diff) < 1.0e-5)
+            if np.any(self.n_range <= 0):
+                logx = False
+            else:
+                log_n_range = np.log(self.n_range)
+                diff = log_n_range - np.linspace(
+                    log_n_range[0], log_n_range[-1], len(log_n_range)
+                )
+                logx = np.all(np.abs(diff) < 1.0e-5)
 
         if logy == "auto":
             if relative_to is not None:
@@ -103,7 +106,7 @@ class PerfplotData:
                 # Set time unit of plots.
                 # Allowed values: ("s", "ms", "us", "ns", "auto")
                 if time_unit == "auto":
-                    time_unit = _auto_time_unit(numpy.min(self.timings))
+                    time_unit = _auto_time_unit(np.min(self.timings))
                 else:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
@@ -166,7 +169,7 @@ def bench(
     labels=None,
     xlabel=None,
     target_time_per_measurement=1.0,
-    equality_check=numpy.allclose,
+    equality_check=np.allclose,
     show_progress=True,
 ):
     if labels is None:
@@ -184,13 +187,13 @@ def bench(
         # Estimate the timer resolution by measuring a no-op.
         number = 100
         noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
-        resolution = numpy.min(noop_time) / number / si_time["ns"]
+        resolution = np.min(noop_time) / number / si_time["ns"]
         # round up to nearest integer
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
-    timings = numpy.empty((len(kernels), len(n_range)), dtype=numpy.uint64)
+    timings = np.empty((len(kernels), len(n_range)), dtype=np.uint64)
 
-    flop = None if flops is None else numpy.array([flops(n) for n in n_range])
+    flop = None if flops is None else np.array([flops(n) for n in n_range])
 
     with Progress() as progress:
         try:
@@ -265,7 +268,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     tm = None
 
     while min_timing <= required_timing:
-        tm = numpy.array(
+        tm = np.array(
             timeit.repeat(
                 stmt=lambda: kernel(data), repeat=repeat, number=number, timer=timer
             )
@@ -273,7 +276,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
         if not is_ns_timer:
             tm /= si_time["ns"]
             tm = tm.astype(int)
-        min_timing = numpy.min(tm)
+        min_timing = np.min(tm)
         # plt.title("number={} repeat={}".format(number, repeat))
         # plt.semilogy(tm)
         # # plt.hist(tm)
@@ -300,7 +303,7 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
     assert tm is not None
     # Only return the minimum time; everthing else just measures how slow the system can
     # go.
-    return numpy.min(tm), numpy.sum(tm)
+    return np.min(tm), np.sum(tm)
 
 
 # For backward compatibility:

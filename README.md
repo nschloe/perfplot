@@ -18,17 +18,17 @@ results.
 
 For example, to compare different NumPy array concatenation methods, the script
 ```python
-import numpy
+import numpy as np
 import perfplot
 
 perfplot.show(
-    setup=lambda n: numpy.random.rand(n),  # or setup=numpy.random.rand
+    setup=lambda n: np.random.rand(n),  # or setup=np.random.rand
     kernels=[
-        lambda a: numpy.c_[a, a],
-        lambda a: numpy.stack([a, a]).T,
-        lambda a: numpy.vstack([a, a]).T,
-        lambda a: numpy.column_stack([a, a]),
-        lambda a: numpy.concatenate([a[:, None], a[:, None]], axis=1),
+        lambda a: np.c_[a, a],
+        lambda a: np.stack([a, a]).T,
+        lambda a: np.vstack([a, a]).T,
+        lambda a: np.column_stack([a, a]),
+        lambda a: np.concatenate([a[:, None], a[:, None]], axis=1),
     ],
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
     n_range=[2 ** k for k in range(25)],
@@ -36,7 +36,7 @@ perfplot.show(
     # More optional arguments with their default values:
     # logx="auto",  # set to True or False to force scaling
     # logy="auto",
-    # equality_check=numpy.allclose,  # set to None to disable "correctness" assertion
+    # equality_check=np.allclose,  # set to None to disable "correctness" assertion
     # show_progress=True,
     # target_time_per_measurement=1.0,
     # time_unit="s",  # set to one of ("auto", "s", "ms", "us", or "ns") to force plot units
@@ -59,7 +59,7 @@ for example:
 ```python
 out = perfplot.bench(
     # same arguments as above (except the plot-related ones, like time_unit or log*)
-    )
+)
 out.show()
 out.save("perf.png", transparent=True, bbox_inches="tight")
 ```
