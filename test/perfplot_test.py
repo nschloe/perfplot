@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import matplotlib.pyplot as plt
 
 import perfplot
 
@@ -83,6 +84,7 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
         labels=["."],  # Suppress no handle error # TODO fix this
         xlabel="",
         flop=None,
+        title=None,
     )
     # Has the correct unit been applied to the y_label?
     data.plot(time_unit=time_unit)
@@ -111,3 +113,34 @@ def test_flops():
         xlabel="len(a)",
         flops=lambda n: n,
     )
+
+
+@pytest.fixture
+def ax():
+    backend = plt.matplotlib.get_backend()
+    plt.matplotlib.use("template")
+    fig, ax = plt.subplots()
+    yield ax
+    plt.clf()
+    plt.matplotlib.use(backend)
+
+
+def test_no_title(ax):
+    perfplot.show(
+        setup=lambda _: 0,
+        kernels=[lambda _: 0],
+        n_range=[1],
+    )
+    assert "Runtime" in ax.get_title()
+    assert not ax.get_ylabel()
+
+
+def test_with_title(ax):
+    perfplot.show(
+        setup=lambda _: 0,
+        kernels=[lambda _: 0],
+        n_range=[1],
+        title="Title",
+    )
+    assert ax.get_title() == "Title"
+    assert "Runtime" in ax.get_ylabel()

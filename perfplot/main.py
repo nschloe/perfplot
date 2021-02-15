@@ -59,12 +59,14 @@ class PerfplotData:
         flop,
         labels,
         xlabel,
+        title,
     ):
         self.n_range = np.asarray(n_range)
         self.timings = timings
         self.flop = flop
         self.labels = labels
         self.xlabel = xlabel
+        self.title = title
 
     def plot(  # noqa: C901
         self,
@@ -111,24 +113,29 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                plt.title(f"Runtime [{time_unit}]")
+                title_or_label = f"Runtime [{time_unit}]"
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                plt.title(f"Runtime relative to {self.labels[relative_to]}()")
+                title_or_label = f"Runtime relative to {self.labels[relative_to]}()"
 
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
         else:
             if relative_to is None:
                 flops = self.flop / self.timings / si_time["ns"]
-                plt.title("FLOPS")
+                title_or_label = "FLOPS"
             else:
                 flops = self.timings[relative_to] / self.timings
-                plt.title(f"FLOPS relative to {self.labels[relative_to]}")
+                title_or_label = f"FLOPS relative to {self.labels[relative_to]}"
 
             for fl, label in zip(flops, self.labels):
                 plotfun(self.n_range, fl, label=label)
 
+        if self.title:
+            plt.title(self.title)
+            plt.ylabel(title_or_label)
+        else:
+            plt.title(title_or_label)
         if self.xlabel:
             plt.xlabel(self.xlabel)
         if relative_to is not None and not logy:
@@ -168,6 +175,7 @@ def bench(
     flops=None,
     labels=None,
     xlabel=None,
+    title=None,
     target_time_per_measurement=1.0,
     equality_check=np.allclose,
     show_progress=True,
@@ -254,7 +262,7 @@ def bench(
             timings = timings[:, :i]
             n_range = n_range[:i]
 
-    data = PerfplotData(n_range, timings, flop, labels, xlabel)
+    data = PerfplotData(n_range, timings, flop, labels, xlabel, title)
     return data
 
 

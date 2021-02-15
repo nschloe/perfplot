@@ -34,6 +34,7 @@ perfplot.show(
     n_range=[2 ** k for k in range(25)],
     xlabel="len(a)",
     # More optional arguments with their default values:
+    # title=None,
     # logx="auto",  # set to True or False to force scaling
     # logy="auto",
     # equality_check=np.allclose,  # set to None to disable "correctness" assertion
