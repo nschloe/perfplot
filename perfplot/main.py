@@ -111,10 +111,15 @@ class PerfplotData:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
                 scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
-                plt.title(f"Runtime [{time_unit}]")
+                ylabel = f"Runtime [{time_unit}]"
             else:
                 scaled_timings = self.timings / self.timings[relative_to]
-                plt.title(f"Runtime relative to {self.labels[relative_to]}()")
+                ylabel = f"Runtime\nrelative to {self.labels[relative_to]}"
+
+            # plt.title(ylabel)
+            ylabel = plt.ylabel(ylabel, ha="center", ma="left")
+            plt.gca().yaxis.set_label_coords(-0.1, 1.0)
+            ylabel.set_rotation(0)
 
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
