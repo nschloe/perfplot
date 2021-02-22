@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/nschloe/perfplothio"><img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%"></a>
+  <a href="https://github.com/nschloe/perfplot"><img alt="perfplot" src="https://nschloe.github.io/perfplot/logo-perfplot.svg" width="60%"></a>
 </p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg?style=flat-square)](https://pypi.org/project/perfplot)
