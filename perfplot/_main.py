@@ -30,7 +30,7 @@ if sys.version_info < (3, 7):
     si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
-def _auto_time_unit(min_time_ns):
+def _auto_time_unit(min_time_ns: float) -> str:
     """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
     execution time into SI second and iterating over the plausible SI time units (s, ms,
@@ -324,10 +324,10 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 # For backward compatibility:
 def plot(
     *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
+    time_unit: str = "s",
+    logx: str = "auto",
+    logy: str = "auto",
+    relative_to: Optional[int] = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -341,10 +341,10 @@ def plot(
 
 def show(
     *args,
-    time_unit="s",
-    relative_to=None,
-    logx="auto",
-    logy="auto",
+    time_unit: str = "s",
+    relative_to: Optional[int] = None,
+    logx: str = "auto",
+    logy: str = "auto",
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -360,10 +360,10 @@ def save(
     filename,
     transparent=True,
     *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
+    time_unit: str = "s",
+    logx: str = "auto",
+    logy: str = "auto",
+    relative_to: Optional[int] = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
