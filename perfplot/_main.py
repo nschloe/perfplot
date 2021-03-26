@@ -2,6 +2,7 @@ import io
 import sys
 import time
 import timeit
+from typing import Optional
 
 import dufte
 import matplotlib
@@ -11,7 +12,7 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
-from .exceptions import PerfplotError
+from ._exceptions import PerfplotError
 
 matplotlib.style.use(dufte.style)
 
@@ -29,7 +30,7 @@ if sys.version_info < (3, 7):
     si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
-def _auto_time_unit(min_time_ns):
+def _auto_time_unit(min_time_ns: float) -> str:
     """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
     execution time into SI second and iterating over the plausible SI time units (s, ms,
@@ -172,10 +173,11 @@ def bench(
     n_range,
     flops=None,
     labels=None,
-    xlabel=None,
-    target_time_per_measurement=1.0,
+    xlabel: Optional[str] = None,
+    target_time_per_measurement: float = 1.0,
+    max_time: Optional[float] = None,
     equality_check=np.allclose,
-    show_progress=True,
+    show_progress: bool = True,
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -196,7 +198,8 @@ def bench(
         # round up to nearest integer
         resolution = -int(-resolution // 1)  # typically around 10 (ns)
 
-    timings = np.empty((len(kernels), len(n_range)), dtype=np.uint64)
+    timings = np.full((len(kernels), len(n_range)), np.nan)
+    cutoff_reached = np.zeros(len(kernels), dtype=bool)
 
     flop = None if flops is None else np.array([flops(n) for n in n_range])
 
@@ -212,6 +215,10 @@ def bench(
                     progress.reset(task2)
 
                 for k, kernel in enumerate(kernels):
+                    if cutoff_reached[k]:
+                        progress.update(task2, advance=1)
+                        continue
+
                     if equality_check:
                         if k == 0:
                             reference = kernel(data)
@@ -242,6 +249,9 @@ def bench(
                         data, kernel, repeat, timer, is_ns_timer, resolution
                     )
                     time_per_repetition = total_time / repeat
+
+                    if max_time is not None and total_time * si_time["ns"] > max_time:
+                        cutoff_reached[k] = True
 
                     remaining_time -= total_time
                     repeat = int(remaining_time // time_per_repetition)
@@ -314,10 +324,10 @@ def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
 # For backward compatibility:
 def plot(
     *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
+    time_unit: str = "s",
+    logx: str = "auto",
+    logy: str = "auto",
+    relative_to: Optional[int] = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -331,10 +341,10 @@ def plot(
 
 def show(
     *args,
-    time_unit="s",
-    relative_to=None,
-    logx="auto",
-    logy="auto",
+    time_unit: str = "s",
+    relative_to: Optional[int] = None,
+    logx: str = "auto",
+    logy: str = "auto",
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -350,10 +360,10 @@ def save(
     filename,
     transparent=True,
     *args,
-    time_unit="s",
-    logx="auto",
-    logy="auto",
-    relative_to=None,
+    time_unit: str = "s",
+    logx: str = "auto",
+    logy: str = "auto",
+    relative_to: Optional[int] = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)

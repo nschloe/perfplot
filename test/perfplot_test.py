@@ -71,7 +71,7 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
 
     import matplotlib.pyplot as plt
 
-    from perfplot.main import PerfplotData
+    from perfplot._main import PerfplotData
 
     # Regular Expression that retrieves the plot unit from label
     unit_re = re.compile(r"\[([musn]?[s])\]")
