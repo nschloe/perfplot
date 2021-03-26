@@ -11,7 +11,7 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
-from .exceptions import PerfplotError
+from ._exceptions import PerfplotError
 
 matplotlib.style.use(dufte.style)
 
