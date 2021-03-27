@@ -1,5 +1,4 @@
 import io
-import sys
 import time
 import timeit
 from typing import Optional
