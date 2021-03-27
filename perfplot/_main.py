@@ -1,5 +1,4 @@
 import io
-import itertools
 import time
 import timeit
 from typing import Callable, List, Optional
@@ -274,94 +273,41 @@ def live(
     equality_check: Optional[Callable] = np.allclose,
     show_progress: bool = True,
 ):
-    # def init():
-    #     # ax.set_ylim(-1.1, 1.1)
-    #     # ax.set_xlim(0, 10)
-    #     # del xdata[:]
-    #     # del ydata[:]
-    #     for line, yd in zip(lines, ydata):
-    #         line.set_data(xdata, yd)
-    #     return lines
-
-    # fig, ax = plt.subplots()
-    # lines = [ax.loglog([], [])[0] for _ in range(len(kernels))]
-
-    # # ax.grid()
-    # xdata = []
-    # ydata = [[] for _ in range(len(kernels))]
-
-    # def run(data):
-    #     for yd, t in zip(ydata, data):
-    #         yd.append(t)
-
-    #     xdata = n_range[: len(ydata[0])]
-
-    #     # xmin, xmax = ax.get_xlim()
-    #     # if t >= xmax:
-    #     #     ax.set_xlim(xmin, 2 * xmax)
-    #     #     ax.figure.canvas.draw()
-
-    #     for line, yd in zip(lines, ydata):
-    #         print(xdata, yd)
-    #         line.set_data(xdata, yd)
-
-    #     return lines
-
-    # labels = None
-    # cutoff_reached = np.zeros(len(n_range), dtype=bool)
-
-    # bench = Bench(
-    #     # progress,
-    #     # task2,
-    #     setup,
-    #     kernels,
-    #     equality_check,
-    #     n_range,
-    #     target_time_per_measurement,
-    #     max_time,
-    #     labels,
-    #     cutoff_reached,
-    # )
-
-    # ani = animation.FuncAnimation(
-    #     fig, run, bench, interval=10, init_func=init, repeat=False
-    # )
-    # plt.show()
-
-    ###################
     def init():
-        # ax.set_ylim(-1.1, 1.1)
-        # ax.set_xlim(0, 10)
-        # del xdata[:]
-        # del ydata[:]
-        line.set_data(xdata, ydata)
-        return (line,)
+        for line, yd in zip(lines, ydata):
+            line.set_data(xdata, yd)
+        return lines
 
     fig, ax = plt.subplots()
-    (line,) = ax.loglog([], [], lw=2)
+
+    lines = []
+    for label in labels:
+        lines.append(ax.loglog([], [], label=label)[0])
+
     ax.grid()
-    xdata, ydata = [], []
+    ax.legend()
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    xdata = []
+    ydata = []
+    for _ in range(len(kernels)):
+        ydata.append([])
 
     def run(data):
         # update the data
-        y = data[0]
-        ydata.append(y)
+        for t, yd in zip(data, ydata):
+            yd.append(t)
 
-        xdata = n_range[:len(ydata)]
-        # xdata = np.arange(len(ydata))
+        xdata = n_range[:len(ydata[0])]
 
         ax.set_xlim(np.min(xdata), np.max(xdata))
         ax.set_ylim(np.min(ydata), np.max(ydata))
         ax.figure.canvas.draw()
 
-        # xmin, xmax = ax.get_xlim()
-        # if xdata[-1] >= xmax:
-        #     print("increase")
-        #     ax.set_xlim(xmin, xmax)
-        #     ax.figure.canvas.draw()
-        line.set_data(xdata, ydata)
+        for line, yd in zip(lines, ydata):
+            line.set_data(xdata, yd)
 
-        return (line,)
+        return lines
 
     bench = Bench(
         # progress,
