@@ -23,11 +23,6 @@ si_time = {
     "us": 1e-6,  # microsecond
     "ns": 1e-9,  # nanosecond
 }
-if sys.version_info < (3, 7):
-    # Make sure that Dictionary is ordered
-    from collections import OrderedDict as odict
-
-    si_time = odict(sorted(si_time.items(), key=lambda i: i[1], reverse=True))
 
 
 def _auto_time_unit(min_time_ns: float) -> str:
@@ -182,22 +177,6 @@ def bench(
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    if hasattr(time, "perf_counter_ns"):
-        # New in version 3.7:
-        timer = time.perf_counter_ns
-        is_ns_timer = True
-        resolution = 1  # ns
-    else:
-        # Remove once we only support 3.7+
-        timer = time.perf_counter
-        is_ns_timer = False
-        # Estimate the timer resolution by measuring a no-op.
-        number = 100
-        noop_time = timeit.repeat(repeat=10, number=number, timer=timer)
-        resolution = np.min(noop_time) / number / si_time["ns"]
-        # round up to nearest integer
-        resolution = -int(-resolution // 1)  # typically around 10 (ns)
-
     timings = np.full((len(kernels), len(n_range)), np.nan)
     cutoff_reached = np.zeros(len(kernels), dtype=bool)
 
@@ -245,9 +224,7 @@ def bench(
                     remaining_time = int(target_time_per_measurement / si_time["ns"])
 
                     repeat = 1
-                    t, total_time = _b(
-                        data, kernel, repeat, timer, is_ns_timer, resolution
-                    )
+                    t, total_time = _b(data, kernel, repeat)
                     time_per_repetition = total_time / repeat
 
                     if max_time is not None and total_time * si_time["ns"] > max_time:
@@ -256,7 +233,7 @@ def bench(
                     remaining_time -= total_time
                     repeat = int(remaining_time // time_per_repetition)
                     if repeat > 0:
-                        t2, _ = _b(data, kernel, repeat, timer, is_ns_timer, resolution)
+                        t2, _ = _b(data, kernel, repeat)
                         t = min(t, t2)
 
                     timings[k, i] = t
@@ -273,43 +250,39 @@ def bench(
     return data
 
 
-def _b(data, kernel, repeat, timer, is_ns_timer, resolution):
+def _b(data, kernel, repeat):
     # Make sure that the statement is executed at least so often that the timing exceeds
     # 10 times the resolution of the clock. `number` is larger than 1 only for the
     # fastest computations. Hardly ever happens.
     number = 1
-    required_timing = 10 * resolution
-    min_timing = 0
+    required_timing_ns = 10
+    min_timing_ns = 0
     tm = None
 
-    while min_timing <= required_timing:
+    while min_timing_ns <= required_timing_ns:
         tm = np.array(
             timeit.repeat(
-                stmt=lambda: kernel(data), repeat=repeat, number=number, timer=timer
+                stmt=lambda: kernel(data),
+                repeat=repeat,
+                number=number,
+                timer=time.perf_counter_ns,
             )
         )
-        if not is_ns_timer:
-            tm /= si_time["ns"]
-            tm = tm.astype(int)
-        min_timing = np.min(tm)
-        # plt.title("number={} repeat={}".format(number, repeat))
-        # plt.semilogy(tm)
-        # # plt.hist(tm)
-        # plt.show()
+        min_timing_ns = np.min(tm)
         tm //= number
-        # Adapt the number of runs for the next iteration such that the required_timing
-        # is just exceeded. If the required timing and minimal timing are just equal,
-        # `number` remains the same (up to an allowance of 0.2).
+        # Adapt the number of runs for the next iteration such that the
+        # required_timing_ns is just exceeded. If the required timing and minimal timing
+        # are just equal, `number` remains the same (up to an allowance of 0.2).
         allowance = 0.2
         max_factor = 100
         factor = max_factor
-        if min_timing > 0:
+        if min_timing_ns > 0:
             # The next expression is
-            #   min(max_factor, required_timing / min_timing + allowance)
-            # with avoiding division by 0 if min_timing is too small.
+            #   min(max_factor, required_timing_ns / min_timing_ns + allowance)
+            # with avoiding division by 0 if min_timing_ns is too small.
             factor = (
-                required_timing / min_timing + allowance
-                if min_timing > required_timing / (max_factor - allowance)
+                required_timing_ns / min_timing_ns + allowance
+                if min_timing_ns > required_timing_ns / (max_factor - allowance)
                 else max_factor
             )
 
