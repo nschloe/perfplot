@@ -181,12 +181,18 @@ def bench(
 
     flop = None if flops is None else np.array([flops(n) for n in n_range])
 
+    task1 = None
+    task2 = None
+    reference = None
+
     with Progress() as progress:
+        i = 0
         try:
             if show_progress:
                 task1 = progress.add_task("Overall", total=len(n_range))
                 task2 = progress.add_task("Kernels", total=len(kernels))
-            for i, n in enumerate(n_range):
+
+            for n in n_range:
                 data = setup(n)
 
                 if show_progress:
@@ -240,6 +246,8 @@ def bench(
                         progress.update(task2, advance=1)
                 if show_progress:
                     progress.update(task1, advance=1)
+
+                i += 1
 
         except KeyboardInterrupt:
             timings = timings[:, :i]
