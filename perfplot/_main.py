@@ -1,4 +1,5 @@
 import io
+import itertools
 import time
 import timeit
 from typing import Callable, List, Optional
@@ -6,6 +7,7 @@ from typing import Callable, List, Optional
 import dufte
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 from rich.console import Console
 from rich.progress import Progress
@@ -13,7 +15,7 @@ from rich.table import Table
 
 from ._exceptions import PerfplotError
 
-matplotlib.style.use(dufte.style)
+# matplotlib.style.use(dufte.style)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
@@ -161,6 +163,224 @@ class PerfplotData:
         return f.getvalue()
 
 
+# iterator
+class Bench:
+    def __init__(
+        self,
+        # progress,
+        # task2,
+        setup,
+        kernels,
+        equality_check,
+        n_range,
+        target_time_per_measurement,
+        max_time,
+        labels,
+        cutoff_reached,
+    ):
+        # self.progress = progress
+        # self.task2 = task2
+        self.setup = setup
+        self.kernels = kernels
+        self.equality_check = equality_check
+        self.n_range = n_range
+        self.target_time_per_measurement = target_time_per_measurement
+        self.max_time = max_time
+        self.labels = labels
+        self.cutoff_reached = cutoff_reached
+
+        self.idx = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.idx >= len(self.n_range):
+            raise StopIteration
+
+        n = self.n_range[self.idx]
+        self.idx += 1
+
+        show_progress = False
+
+        data = self.setup(n)
+        reference = None
+        timings = []
+        for k, kernel in enumerate(self.kernels):
+            if self.cutoff_reached[k]:
+                if show_progress:
+                    self.progress.update(self.task2, advance=1)
+                continue
+
+            # First let the function run one time. The value is used for the
+            # equality_check and the time for gauging how many more repetitions
+            # are to be done. If the initial time doesn't exceed the target
+            # time, append as many repetitions as the first measurement
+            # suggests. If the kernel is fast, the measurement with one
+            # repetition only can be somewhat off, but most of the time it's
+            # good enough.
+            t0_ns = time.time_ns()
+            val = kernel(data)
+            t1_ns = time.time_ns()
+            t_ns = t1_ns - t0_ns
+
+            if self.equality_check:
+                if k == 0:
+                    reference = val
+                else:
+                    try:
+                        is_equal = self.equality_check(reference, val)
+                    except TypeError:
+                        raise PerfplotError(
+                            "Error in equality_check. "
+                            + "Try setting equality_check=None."
+                        )
+                    else:
+                        if not is_equal:
+                            raise PerfplotError(
+                                "Equality check failure. "
+                                + f"({self.labels[0]}, {self.labels[k]})"
+                            )
+
+            # First try with one repetition only.
+            remaining_time_ns = int(self.target_time_per_measurement / si_time["ns"])
+
+            if self.max_time is not None and t_ns * si_time["ns"] > self.max_time:
+                self.cutoff_reached[k] = True
+
+            remaining_time_ns -= t_ns
+            repeat = remaining_time_ns // t_ns
+            if repeat > 0:
+                t2 = _b(data, kernel, repeat)
+                t_ns = min(t_ns, t2)
+
+            timings.append(t_ns)
+            if show_progress:
+                self.progress.update(self.task2, advance=1)
+
+
+        return np.array(timings) * 1.0e-9
+
+
+def live(
+    setup: Callable,
+    kernels: List[Callable],
+    n_range: List[int],
+    flops: Optional[Callable] = None,
+    labels: Optional[List[str]] = None,
+    xlabel: Optional[str] = None,
+    target_time_per_measurement: float = 1.0,
+    max_time: Optional[float] = None,
+    equality_check: Optional[Callable] = np.allclose,
+    show_progress: bool = True,
+):
+    # def init():
+    #     # ax.set_ylim(-1.1, 1.1)
+    #     # ax.set_xlim(0, 10)
+    #     # del xdata[:]
+    #     # del ydata[:]
+    #     for line, yd in zip(lines, ydata):
+    #         line.set_data(xdata, yd)
+    #     return lines
+
+    # fig, ax = plt.subplots()
+    # lines = [ax.loglog([], [])[0] for _ in range(len(kernels))]
+
+    # # ax.grid()
+    # xdata = []
+    # ydata = [[] for _ in range(len(kernels))]
+
+    # def run(data):
+    #     for yd, t in zip(ydata, data):
+    #         yd.append(t)
+
+    #     xdata = n_range[: len(ydata[0])]
+
+    #     # xmin, xmax = ax.get_xlim()
+    #     # if t >= xmax:
+    #     #     ax.set_xlim(xmin, 2 * xmax)
+    #     #     ax.figure.canvas.draw()
+
+    #     for line, yd in zip(lines, ydata):
+    #         print(xdata, yd)
+    #         line.set_data(xdata, yd)
+
+    #     return lines
+
+    # labels = None
+    # cutoff_reached = np.zeros(len(n_range), dtype=bool)
+
+    # bench = Bench(
+    #     # progress,
+    #     # task2,
+    #     setup,
+    #     kernels,
+    #     equality_check,
+    #     n_range,
+    #     target_time_per_measurement,
+    #     max_time,
+    #     labels,
+    #     cutoff_reached,
+    # )
+
+    # ani = animation.FuncAnimation(
+    #     fig, run, bench, interval=10, init_func=init, repeat=False
+    # )
+    # plt.show()
+
+    ###################
+    def init():
+        # ax.set_ylim(-1.1, 1.1)
+        # ax.set_xlim(0, 10)
+        # del xdata[:]
+        # del ydata[:]
+        line.set_data(xdata, ydata)
+        return (line,)
+
+    fig, ax = plt.subplots()
+    (line,) = ax.loglog([], [], lw=2)
+    ax.grid()
+    xdata, ydata = [], []
+
+    def run(data):
+        # update the data
+        y = data[0]
+        ydata.append(y)
+
+        xdata = n_range[:len(ydata)]
+        # xdata = np.arange(len(ydata))
+
+        ax.set_xlim(np.min(xdata), np.max(xdata))
+        ax.set_ylim(np.min(ydata), np.max(ydata))
+        ax.figure.canvas.draw()
+
+        # xmin, xmax = ax.get_xlim()
+        # if xdata[-1] >= xmax:
+        #     print("increase")
+        #     ax.set_xlim(xmin, xmax)
+        #     ax.figure.canvas.draw()
+        line.set_data(xdata, ydata)
+
+        return (line,)
+
+    bench = Bench(
+        # progress,
+        # task2,
+        setup,
+        kernels,
+        equality_check,
+        n_range,
+        target_time_per_measurement,
+        max_time,
+        labels,
+        cutoff_reached = np.zeros(len(n_range), dtype=bool),
+    )
+    ani = animation.FuncAnimation(
+        fig, run, bench, interval=10, init_func=init, repeat=False
+    )
+    plt.show()
+
+
 def bench(
     setup: Callable,
     kernels: List[Callable],
@@ -176,7 +396,7 @@ def bench(
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    timings = np.full((len(kernels), len(n_range)), np.nan)
+    timings = np.full((len(n_range), len(kernels)), np.nan)
     cutoff_reached = np.zeros(len(kernels), dtype=bool)
 
     flop = None if flops is None else np.array([flops(n) for n in n_range])
@@ -184,80 +404,41 @@ def bench(
     task1 = None
     task2 = None
 
+    # inner iterator
+
     with Progress() as progress:
-        i = 0
         try:
             if show_progress:
                 task1 = progress.add_task("Overall", total=len(n_range))
                 task2 = progress.add_task("Kernels", total=len(kernels))
 
-            for n in n_range:
-                data = setup(n)
+            b = Bench(
+                progress,
+                task2,
+                setup,
+                kernels,
+                equality_check,
+                n_range,
+                target_time_per_measurement,
+                max_time,
+                labels,
+                cutoff_reached,
+            )
 
+            for i in range(len(n_range)):
                 if show_progress:
                     progress.reset(task2)
 
-                reference = None
-                for k, kernel in enumerate(kernels):
-                    if cutoff_reached[k]:
-                        progress.update(task2, advance=1)
-                        continue
+                timings[i] = next(b)
 
-                    # First let the function run one time. The value is used for the
-                    # equality_check and the time for gauging how many more repetitions
-                    # are to be done. If the initial time doesn't exceed the target
-                    # time, append as many repetitions as the first measurement
-                    # suggests. If the kernel is fast, the measurement with one
-                    # repetition only can be somewhat off, but most of the time it's
-                    # good enough.
-                    t0_ns = time.time_ns()
-                    val = kernel(data)
-                    t1_ns = time.time_ns()
-                    t_ns = t1_ns - t0_ns
-
-                    if equality_check:
-                        if k == 0:
-                            reference = val
-                        else:
-                            try:
-                                is_equal = equality_check(reference, val)
-                            except TypeError:
-                                raise PerfplotError(
-                                    "Error in equality_check. "
-                                    "Try setting equality_check=None."
-                                )
-                            else:
-                                if not is_equal:
-                                    raise PerfplotError(
-                                        "Equality check failure. "
-                                        f"({labels[0]}, {labels[k]})"
-                                    )
-
-                    # First try with one repetition only.
-                    remaining_time_ns = int(target_time_per_measurement / si_time["ns"])
-
-                    if max_time is not None and t_ns * si_time["ns"] > max_time:
-                        cutoff_reached[k] = True
-
-                    remaining_time_ns -= t_ns
-                    repeat = remaining_time_ns // t_ns
-                    if repeat > 0:
-                        t2 = _b(data, kernel, repeat)
-                        t_ns = min(t_ns, t2)
-
-                    timings[k, i] = t_ns
-                    if show_progress:
-                        progress.update(task2, advance=1)
                 if show_progress:
                     progress.update(task1, advance=1)
 
-                i += 1
-
         except KeyboardInterrupt:
-            timings = timings[:, :i]
+            timings = timings[:i]
             n_range = n_range[:i]
 
-    return PerfplotData(n_range, timings, flop, labels, xlabel)
+    return PerfplotData(n_range, timings.T, flop, labels, xlabel)
 
 
 def _b(data, kernel, repeat):
