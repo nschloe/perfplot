@@ -1,7 +1,7 @@
 import io
 import time
 import timeit
-from typing import Optional
+from typing import Callable, List, Optional
 
 import dufte
 import matplotlib
@@ -49,11 +49,11 @@ def _auto_time_unit(min_time_ns: float) -> str:
 class PerfplotData:
     def __init__(
         self,
-        n_range,
+        n_range: List[int],
         timings,
         flop,
-        labels,
-        xlabel,
+        labels: List[str],
+        xlabel: Optional[str],
     ):
         self.n_range = np.asarray(n_range)
         self.timings = timings
@@ -162,15 +162,15 @@ class PerfplotData:
 
 
 def bench(
-    setup,
-    kernels,
-    n_range,
-    flops=None,
-    labels=None,
+    setup: Callable,
+    kernels: List[Callable],
+    n_range: List[int],
+    flops: Optional[Callable] = None,
+    labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
     target_time_per_measurement: float = 1.0,
     max_time: Optional[float] = None,
-    equality_check=np.allclose,
+    equality_check: Optional[Callable] = np.allclose,
     show_progress: bool = True,
 ):
     if labels is None:
@@ -181,28 +181,46 @@ def bench(
 
     flop = None if flops is None else np.array([flops(n) for n in n_range])
 
+    task1 = None
+    task2 = None
+
     with Progress() as progress:
+        i = 0
         try:
             if show_progress:
                 task1 = progress.add_task("Overall", total=len(n_range))
                 task2 = progress.add_task("Kernels", total=len(kernels))
-            for i, n in enumerate(n_range):
+
+            for n in n_range:
                 data = setup(n)
 
                 if show_progress:
                     progress.reset(task2)
 
+                reference = None
                 for k, kernel in enumerate(kernels):
                     if cutoff_reached[k]:
                         progress.update(task2, advance=1)
                         continue
 
+                    # First let the function run one time. The value is used for the
+                    # equality_check and the time for gauging how many more repetitions
+                    # are to be done. If the initial time doesn't exceed the target
+                    # time, append as many repetitions as the first measurement
+                    # suggests. If the kernel is fast, the measurement with one
+                    # repetition only can be somewhat off, but most of the time it's
+                    # good enough.
+                    t0_ns = time.time_ns()
+                    val = kernel(data)
+                    t1_ns = time.time_ns()
+                    t_ns = t1_ns - t0_ns
+
                     if equality_check:
                         if k == 0:
-                            reference = kernel(data)
+                            reference = val
                         else:
                             try:
-                                is_equal = equality_check(reference, kernel(data))
+                                is_equal = equality_check(reference, val)
                             except TypeError:
                                 raise PerfplotError(
                                     "Error in equality_check. "
@@ -215,38 +233,31 @@ def bench(
                                         f"({labels[0]}, {labels[k]})"
                                     )
 
-                    # First try with one repetition only. If this doesn't exceed the
-                    # target time, append as many repetitions as the first measurement
-                    # suggests. If the kernel is fast, the measurement with one
-                    # repetition only can be somewhat off, but most of the time it's
-                    # good enough.
-                    remaining_time = int(target_time_per_measurement / si_time["ns"])
+                    # First try with one repetition only.
+                    remaining_time_ns = int(target_time_per_measurement / si_time["ns"])
 
-                    repeat = 1
-                    t, total_time = _b(data, kernel, repeat)
-                    time_per_repetition = total_time / repeat
-
-                    if max_time is not None and total_time * si_time["ns"] > max_time:
+                    if max_time is not None and t_ns * si_time["ns"] > max_time:
                         cutoff_reached[k] = True
 
-                    remaining_time -= total_time
-                    repeat = int(remaining_time // time_per_repetition)
+                    remaining_time_ns -= t_ns
+                    repeat = remaining_time_ns // t_ns
                     if repeat > 0:
-                        t2, _ = _b(data, kernel, repeat)
-                        t = min(t, t2)
+                        t2 = _b(data, kernel, repeat)
+                        t_ns = min(t_ns, t2)
 
-                    timings[k, i] = t
+                    timings[k, i] = t_ns
                     if show_progress:
                         progress.update(task2, advance=1)
                 if show_progress:
                     progress.update(task1, advance=1)
 
+                i += 1
+
         except KeyboardInterrupt:
             timings = timings[:, :i]
             n_range = n_range[:i]
 
-    data = PerfplotData(n_range, timings, flop, labels, xlabel)
-    return data
+    return PerfplotData(n_range, timings, flop, labels, xlabel)
 
 
 def _b(data, kernel, repeat):
@@ -290,7 +301,7 @@ def _b(data, kernel, repeat):
     assert tm is not None
     # Only return the minimum time; everthing else just measures how slow the system can
     # go.
-    return np.min(tm), np.sum(tm)
+    return np.min(tm)
 
 
 # For backward compatibility:
