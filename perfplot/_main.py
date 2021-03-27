@@ -1,7 +1,7 @@
 import io
 import time
 import timeit
-from typing import Optional
+from typing import Callable, List, Optional
 
 import dufte
 import matplotlib
@@ -49,11 +49,11 @@ def _auto_time_unit(min_time_ns: float) -> str:
 class PerfplotData:
     def __init__(
         self,
-        n_range,
+        n_range: List[int],
         timings,
         flop,
-        labels,
-        xlabel,
+        labels: List[str],
+        xlabel: Optional[str],
     ):
         self.n_range = np.asarray(n_range)
         self.timings = timings
@@ -162,15 +162,15 @@ class PerfplotData:
 
 
 def bench(
-    setup,
-    kernels,
-    n_range,
-    flops=None,
-    labels=None,
+    setup: Callable,
+    kernels: List[Callable],
+    n_range: List[int],
+    flops: Optional[Callable] = None,
+    labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
     target_time_per_measurement: float = 1.0,
     max_time: Optional[float] = None,
-    equality_check=np.allclose,
+    equality_check: Optional[Callable] = np.allclose,
     show_progress: bool = True,
 ):
     if labels is None:
