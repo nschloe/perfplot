@@ -56,6 +56,15 @@ Clearly, `stack` and `vstack` are the best options for large arrays.
 
 (By default, perfplot asserts the equality of the output of all snippets, too.)
 
+If your plot takes a while to generate, you can also use
+<!--exdown-skip-->
+```python
+perfplot.live(
+  # ...
+)
+```
+with the same arguments as above. It will plot the updates live.
+
 Benchmarking and plotting can be separated. This allows multiple plots of the same data,
 for example:
 <!--exdown-skip-->
