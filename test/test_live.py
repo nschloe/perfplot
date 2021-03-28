@@ -1,5 +1,6 @@
-import perfplot
 import numpy as np
+
+import perfplot
 
 
 def test_live():

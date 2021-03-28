@@ -445,9 +445,11 @@ def bench(
                 task1 = progress.add_task("Overall", total=len(n_range))
                 task2 = progress.add_task("Kernels", total=len(kernels))
 
+            def callback():
+                if show_progress:
+                    progress.update(task2, advance=1)
+
             b = Bench(
-                progress,
-                task2,
                 setup,
                 kernels,
                 equality_check,
@@ -456,16 +458,15 @@ def bench(
                 max_time,
                 labels,
                 cutoff_reached,
+                callback=callback,
             )
 
             for i in range(len(n_range)):
-                if show_progress:
-                    progress.reset(task2)
-
                 timings[i] = next(b)
 
                 if show_progress:
                     progress.update(task1, advance=1)
+                    progress.reset(task2)
 
         except KeyboardInterrupt:
             timings = timings[:i]
