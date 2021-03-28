@@ -1,7 +1,7 @@
 import io
 import time
 import timeit
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import dufte
 import matplotlib
@@ -64,10 +64,10 @@ class PerfplotData:
 
     def plot(  # noqa: C901
         self,
-        time_unit="s",
-        relative_to=None,
-        logx="auto",
-        logy="auto",
+        time_unit: str = "s",
+        relative_to: Optional[int] = None,
+        logx: Union[str, bool] = "auto",
+        logy: Union[str, bool] = "auto",
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
@@ -256,7 +256,7 @@ class Bench:
         return np.array(timings) * 1.0e-9
 
 
-def _b(data, kernel, repeat):
+def _b(data, kernel: Callable, repeat: int):
     # Make sure that the statement is executed at least so often that the timing exceeds
     # 10 times the resolution of the clock. `number` is larger than 1 only for the
     # fastest computations. Hardly ever happens.
@@ -310,7 +310,28 @@ def live(
     max_time: Optional[float] = None,
     equality_check: Optional[Callable] = np.allclose,
     show_progress: bool = True,
+    logx: Union[str, bool] = "auto",
+    logy: Union[str, bool] = "auto",
 ):
+    if labels is None:
+        labels = [k.__name__ for k in kernels]
+
+    n_range = np.asarray(n_range)
+
+    if logx == "auto":
+        # Check if the x values are approximately equally spaced in log
+        if np.any(n_range <= 0):
+            logx = False
+        else:
+            log_n_range = np.log(n_range)
+            diff = log_n_range - np.linspace(
+                log_n_range[0], log_n_range[-1], len(log_n_range)
+            )
+            logx = np.all(np.abs(diff) < 1.0e-5)
+
+    if logy == "auto":
+        logy = logx
+
     # animation adapted from
     # <https://matplotlib.org/stable/gallery/animation/animate_decay.html>
     with Progress() as progress:
@@ -325,9 +346,18 @@ def live(
 
         fig, ax = plt.subplots()
 
+        if logx and logy:
+            plotfun = ax.loglog
+        elif logx:
+            plotfun = ax.semilogx
+        elif logy:
+            plotfun = ax.semilogy
+        else:
+            plotfun = ax.plot
+
         lines = []
         for label in labels:
-            lines.append(ax.loglog([], [], label=label)[0])
+            lines.append(plotfun([], [], label=label)[0])
 
         ax.legend()
         if xlabel:
@@ -374,6 +404,8 @@ def live(
             cutoff_reached=np.zeros(len(n_range), dtype=bool),
             callback=callback,
         )
+        # Assign FuncAnimation to a dummy variable to avoid it being destroyed before
+        # the animation has completed. This is mpl's recommendation.
         ani = animation.FuncAnimation(
             fig, run, bench, interval=10, init_func=init, repeat=False
         )
@@ -444,8 +476,8 @@ def bench(
 def plot(
     *args,
     time_unit: str = "s",
-    logx: str = "auto",
-    logy: str = "auto",
+    logx: Union[str, bool] = "auto",
+    logy: Union[str, bool] = "auto",
     relative_to: Optional[int] = None,
     **kwargs,
 ):
