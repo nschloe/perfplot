@@ -5,8 +5,8 @@ from typing import Callable, List, Optional
 
 import dufte
 import matplotlib
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
 import numpy as np
 from rich.console import Console
 from rich.progress import Progress
@@ -14,7 +14,7 @@ from rich.table import Table
 
 from ._exceptions import PerfplotError
 
-# matplotlib.style.use(dufte.style)
+matplotlib.style.use(dufte.style)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
@@ -166,8 +166,6 @@ class PerfplotData:
 class Bench:
     def __init__(
         self,
-        # progress,
-        # task2,
         setup,
         kernels,
         equality_check,
@@ -176,9 +174,8 @@ class Bench:
         max_time,
         labels,
         cutoff_reached,
+        callback=None,
     ):
-        # self.progress = progress
-        # self.task2 = task2
         self.setup = setup
         self.kernels = kernels
         self.equality_check = equality_check
@@ -187,6 +184,7 @@ class Bench:
         self.max_time = max_time
         self.labels = labels
         self.cutoff_reached = cutoff_reached
+        self.callback = callback
 
         self.idx = 0
 
@@ -200,15 +198,13 @@ class Bench:
         n = self.n_range[self.idx]
         self.idx += 1
 
-        show_progress = False
-
         data = self.setup(n)
         reference = None
         timings = []
         for k, kernel in enumerate(self.kernels):
             if self.cutoff_reached[k]:
-                if show_progress:
-                    self.progress.update(self.task2, advance=1)
+                if self.callback is not None:
+                    self.callback()
                 continue
 
             # First let the function run one time. The value is used for the
@@ -254,18 +250,60 @@ class Bench:
                 t_ns = min(t_ns, t2)
 
             timings.append(t_ns)
-            if show_progress:
-                self.progress.update(self.task2, advance=1)
-
+            if self.callback is not None:
+                self.callback()
 
         return np.array(timings) * 1.0e-9
+
+
+def _b(data, kernel, repeat):
+    # Make sure that the statement is executed at least so often that the timing exceeds
+    # 10 times the resolution of the clock. `number` is larger than 1 only for the
+    # fastest computations. Hardly ever happens.
+    number = 1
+    required_timing_ns = 10
+    min_timing_ns = 0
+    tm = None
+
+    while min_timing_ns <= required_timing_ns:
+        tm = np.array(
+            timeit.repeat(
+                stmt=lambda: kernel(data),
+                repeat=repeat,
+                number=number,
+                timer=time.perf_counter_ns,
+            )
+        )
+        min_timing_ns = np.min(tm)
+        tm //= number
+        # Adapt the number of runs for the next iteration such that the
+        # required_timing_ns is just exceeded. If the required timing and minimal timing
+        # are just equal, `number` remains the same (up to an allowance of 0.2).
+        allowance = 0.2
+        max_factor = 100
+        factor = max_factor
+        if min_timing_ns > 0:
+            # The next expression is
+            #   min(max_factor, required_timing_ns / min_timing_ns + allowance)
+            # with avoiding division by 0 if min_timing_ns is too small.
+            factor = (
+                required_timing_ns / min_timing_ns + allowance
+                if min_timing_ns > required_timing_ns / (max_factor - allowance)
+                else max_factor
+            )
+
+        number = int(factor * number) + 1
+
+    assert tm is not None
+    # Only return the minimum time; everthing else just measures how slow the system can
+    # go.
+    return np.min(tm)
 
 
 def live(
     setup: Callable,
     kernels: List[Callable],
     n_range: List[int],
-    flops: Optional[Callable] = None,
     labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
     target_time_per_measurement: float = 1.0,
@@ -273,58 +311,73 @@ def live(
     equality_check: Optional[Callable] = np.allclose,
     show_progress: bool = True,
 ):
-    def init():
-        for line, yd in zip(lines, ydata):
-            line.set_data(xdata, yd)
-        return lines
+    # animation adapted from
+    # <https://matplotlib.org/stable/gallery/animation/animate_decay.html>
+    with Progress() as progress:
+        if show_progress:
+            task1 = progress.add_task("Overall", total=len(n_range))
+            task2 = progress.add_task("Kernels", total=len(kernels))
 
-    fig, ax = plt.subplots()
+        def init():
+            for line, yd in zip(lines, ydata):
+                line.set_data(xdata, yd)
+            return lines
 
-    lines = []
-    for label in labels:
-        lines.append(ax.loglog([], [], label=label)[0])
+        fig, ax = plt.subplots()
 
-    ax.grid()
-    ax.legend()
-    if xlabel:
-        ax.set_xlabel(xlabel)
-    xdata = []
-    ydata = []
-    for _ in range(len(kernels)):
-        ydata.append([])
+        lines = []
+        for label in labels:
+            lines.append(ax.loglog([], [], label=label)[0])
 
-    def run(data):
-        # update the data
-        for t, yd in zip(data, ydata):
-            yd.append(t)
+        ax.legend()
+        if xlabel:
+            ax.set_xlabel(xlabel)
+        xdata = []
+        ydata = []
+        for _ in range(len(kernels)):
+            ydata.append([])
 
-        xdata = n_range[:len(ydata[0])]
+        def run(data):
+            # update the data
+            for t, yd in zip(data, ydata):
+                yd.append(t)
 
-        ax.set_xlim(np.min(xdata), np.max(xdata))
-        ax.set_ylim(np.min(ydata), np.max(ydata))
-        ax.figure.canvas.draw()
+            xdata = n_range[: len(ydata[0])]
 
-        for line, yd in zip(lines, ydata):
-            line.set_data(xdata, yd)
+            if len(xdata) > 1:
+                ax.set_xlim(np.min(xdata), np.max(xdata))
+            if len(ydata) > 1:
+                ax.set_ylim(np.min(ydata), np.max(ydata))
 
-        return lines
+            ax.figure.canvas.draw()
 
-    bench = Bench(
-        # progress,
-        # task2,
-        setup,
-        kernels,
-        equality_check,
-        n_range,
-        target_time_per_measurement,
-        max_time,
-        labels,
-        cutoff_reached = np.zeros(len(n_range), dtype=bool),
-    )
-    ani = animation.FuncAnimation(
-        fig, run, bench, interval=10, init_func=init, repeat=False
-    )
-    plt.show()
+            for line, yd in zip(lines, ydata):
+                line.set_data(xdata, yd)
+
+            if show_progress:
+                progress.update(task1, advance=1)
+                progress.reset(task2)
+            return lines
+
+        def callback():
+            if show_progress:
+                progress.update(task2, advance=1)
+
+        bench = Bench(
+            setup,
+            kernels,
+            equality_check,
+            n_range,
+            target_time_per_measurement,
+            max_time,
+            labels,
+            cutoff_reached=np.zeros(len(n_range), dtype=bool),
+            callback=callback,
+        )
+        ani = animation.FuncAnimation(
+            fig, run, bench, interval=10, init_func=init, repeat=False
+        )
+        plt.show()
 
 
 def bench(
@@ -385,50 +438,6 @@ def bench(
             n_range = n_range[:i]
 
     return PerfplotData(n_range, timings.T, flop, labels, xlabel)
-
-
-def _b(data, kernel, repeat):
-    # Make sure that the statement is executed at least so often that the timing exceeds
-    # 10 times the resolution of the clock. `number` is larger than 1 only for the
-    # fastest computations. Hardly ever happens.
-    number = 1
-    required_timing_ns = 10
-    min_timing_ns = 0
-    tm = None
-
-    while min_timing_ns <= required_timing_ns:
-        tm = np.array(
-            timeit.repeat(
-                stmt=lambda: kernel(data),
-                repeat=repeat,
-                number=number,
-                timer=time.perf_counter_ns,
-            )
-        )
-        min_timing_ns = np.min(tm)
-        tm //= number
-        # Adapt the number of runs for the next iteration such that the
-        # required_timing_ns is just exceeded. If the required timing and minimal timing
-        # are just equal, `number` remains the same (up to an allowance of 0.2).
-        allowance = 0.2
-        max_factor = 100
-        factor = max_factor
-        if min_timing_ns > 0:
-            # The next expression is
-            #   min(max_factor, required_timing_ns / min_timing_ns + allowance)
-            # with avoiding division by 0 if min_timing_ns is too small.
-            factor = (
-                required_timing_ns / min_timing_ns + allowance
-                if min_timing_ns > required_timing_ns / (max_factor - allowance)
-                else max_factor
-            )
-
-        number = int(factor * number) + 1
-
-    assert tm is not None
-    # Only return the minimum time; everthing else just measures how slow the system can
-    # go.
-    return np.min(tm)
 
 
 # For backward compatibility:
