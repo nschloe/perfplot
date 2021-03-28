@@ -406,7 +406,7 @@ def live(
         )
         # Assign FuncAnimation to a dummy variable to avoid it being destroyed before
         # the animation has completed. This is mpl's recommendation.
-        anim = animation.FuncAnimation(
+        anim = animation.FuncAnimation(  # noqa: F841
             fig, run, bench, interval=10, init_func=init, repeat=False
         )
 
