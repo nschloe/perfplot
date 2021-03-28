@@ -406,9 +406,11 @@ def live(
         )
         # Assign FuncAnimation to a dummy variable to avoid it being destroyed before
         # the animation has completed. This is mpl's recommendation.
-        ani = animation.FuncAnimation(
+        anim = animation.FuncAnimation(
             fig, run, bench, interval=10, init_func=init, repeat=False
         )
+
+        # anim.save("anim.gif", fps=5)
         plt.show()
 
 

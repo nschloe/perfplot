@@ -60,10 +60,11 @@ If your plot takes a while to generate, you can also use
 <!--exdown-skip-->
 ```python
 perfplot.live(
-  # ...
+    # ...
 )
 ```
 with the same arguments as above. It will plot the updates live.
+<img alt="live" src="https://nschloe.github.io/perfplot/live.gif" width="40%">
 
 Benchmarking and plotting can be separated. This allows multiple plots of the same data,
 for example:
