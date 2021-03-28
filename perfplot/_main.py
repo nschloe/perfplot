@@ -203,17 +203,17 @@ class Bench:
         timings = []
         for k, kernel in enumerate(self.kernels):
             if self.cutoff_reached[k]:
+                timings.append(np.nan)
                 if self.callback is not None:
                     self.callback()
                 continue
 
             # First let the function run one time. The value is used for the
-            # equality_check and the time for gauging how many more repetitions
-            # are to be done. If the initial time doesn't exceed the target
-            # time, append as many repetitions as the first measurement
-            # suggests. If the kernel is fast, the measurement with one
-            # repetition only can be somewhat off, but most of the time it's
-            # good enough.
+            # equality_check and the time for gauging how many more repetitions are to
+            # be done. If the initial time doesn't exceed the target time, append as
+            # many repetitions as the first measurement suggests. If the kernel is fast,
+            # the measurement with one repetition only can be somewhat off, but most of
+            # the time it's good enough.
             t0_ns = time.time_ns()
             val = kernel(data)
             t1_ns = time.time_ns()
@@ -375,9 +375,11 @@ def live(
             xdata = n_range[: len(ydata[0])]
 
             if len(xdata) > 1:
-                ax.set_xlim(np.min(xdata), np.max(xdata))
-            if len(ydata) > 1:
-                ax.set_ylim(np.min(ydata), np.max(ydata))
+                ax.set_xlim(np.nanmin(xdata), np.nanmax(xdata))
+
+            yd = np.asarray(ydata)
+            if yd.size > 1:
+                ax.set_ylim(np.nanmin(yd), np.nanmax(yd))
 
             ax.figure.canvas.draw()
 
