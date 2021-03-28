@@ -1,5 +1,5 @@
 from .__about__ import __version__
-from ._main import bench, plot, save, show
+from ._main import bench, live, plot, save, show
 
 __all__ = [
     "__version__",
@@ -7,4 +7,5 @@ __all__ = [
     "plot",
     "show",
     "save",
+    "live",
 ]
