@@ -73,13 +73,12 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
 
     from perfplot._main import PerfplotData
 
-    # Regular Expression that retrieves the plot unit from label
-    unit_re = re.compile(r"\[([musn]?[s])\]")
+    timings = np.full((1, 1), time_ns * 1.0e-9)
 
     data = PerfplotData(
         n_range=[1],
         # Converting timings to ns
-        timings=np.full((1, 1), time_ns, dtype=np.uint64),
+        timings_s=timings,
         labels=["."],  # Suppress no handle error # TODO fix this
         xlabel="",
         flop=None,
@@ -87,6 +86,9 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
     # Has the correct unit been applied to the y_label?
     data.plot(time_unit=time_unit)
     ax = plt.gca()
+
+    # Regular Expression that retrieves the plot unit from label
+    unit_re = re.compile(r"\[([musn]?[s])\]")
     plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
     assert plot_unit == exp_unit
 

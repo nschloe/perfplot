@@ -25,7 +25,7 @@ si_time = {
 }
 
 
-def _auto_time_unit(min_time_ns: float) -> str:
+def _auto_time_unit(time_s: float) -> str:
     """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
     execution time into SI second and iterating over the plausible SI time units (s, ms,
@@ -38,10 +38,9 @@ def _auto_time_unit(min_time_ns: float) -> str:
         This is the same algorithm used by the timeit module
     """
     # Converting minimum timing into seconds from nanoseconds
-    t_s = min_time_ns * si_time["ns"]
     time_unit = None
     for time_unit, magnitude in si_time.items():
-        if t_s >= magnitude:
+        if time_s >= magnitude:
             break
     assert time_unit is not None
     return time_unit
@@ -51,13 +50,13 @@ class PerfplotData:
     def __init__(
         self,
         n_range: List[int],
-        timings,
+        timings_s,
         flop,
         labels: List[str],
         xlabel: Optional[str],
     ):
         self.n_range = np.asarray(n_range)
-        self.timings = timings
+        self.timings_s = timings_s
         self.flop = flop
         self.labels = labels
         self.xlabel = xlabel
@@ -102,14 +101,14 @@ class PerfplotData:
                 # Set time unit of plots.
                 # Allowed values: ("s", "ms", "us", "ns", "auto")
                 if time_unit == "auto":
-                    time_unit = _auto_time_unit(np.min(self.timings))
+                    time_unit = _auto_time_unit(np.min(self.timings_s))
                 else:
                     assert time_unit in si_time, "Provided `time_unit` is not valid"
 
-                scaled_timings = self.timings * (si_time["ns"] / si_time[time_unit])
+                scaled_timings = self.timings_s / si_time[time_unit]
                 ylabel = f"Runtime [{time_unit}]"
             else:
-                scaled_timings = self.timings / self.timings[relative_to]
+                scaled_timings = self.timings_s / self.timings_s[relative_to]
                 ylabel = f"Runtime\nrelative to {self.labels[relative_to]}"
 
             # plt.title(ylabel)
@@ -121,10 +120,10 @@ class PerfplotData:
                 plotfun(self.n_range, t, label=label)
         else:
             if relative_to is None:
-                flops = self.flop / self.timings / si_time["ns"]
+                flops = self.flop / self.timings_s
                 plt.title("FLOPS")
             else:
-                flops = self.timings[relative_to] / self.timings
+                flops = self.timings_s[relative_to] / self.timings_s
                 plt.title(f"FLOPS relative to {self.labels[relative_to]}")
 
             for fl, label in zip(flops, self.labels):
@@ -152,7 +151,7 @@ class PerfplotData:
         for label in self.labels:
             table.add_column(label)
 
-        for n, t in zip(self.n_range, self.timings.T):
+        for n, t in zip(self.n_range, self.timings_s.T):
             lst = [str(n)] + [str(tt) for tt in t]
             table.add_row(*lst)
 
@@ -408,7 +407,7 @@ def live(
         )
         # Assign FuncAnimation to a dummy variable to avoid it being destroyed before
         # the animation has completed. This is mpl's recommendation.
-        anim = animation.FuncAnimation(  # noqa: F841
+        _ = animation.FuncAnimation(
             fig, run, bench, interval=10, init_func=init, repeat=False
         )
 
@@ -431,7 +430,7 @@ def bench(
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    timings = np.full((len(n_range), len(kernels)), np.nan)
+    timings_s = np.full((len(n_range), len(kernels)), np.nan)
     cutoff_reached = np.zeros(len(kernels), dtype=bool)
 
     flop = None if flops is None else np.array([flops(n) for n in n_range])
@@ -464,17 +463,17 @@ def bench(
             )
 
             for i in range(len(n_range)):
-                timings[i] = next(b)
+                timings_s[i] = next(b)
 
                 if show_progress:
                     progress.update(task1, advance=1)
                     progress.reset(task2)
 
         except KeyboardInterrupt:
-            timings = timings[:i]
+            timings_s = timings_s[:i]
             n_range = n_range[:i]
 
-    return PerfplotData(n_range, timings.T, flop, labels, xlabel)
+    return PerfplotData(n_range, timings_s.T, flop, labels, xlabel)
 
 
 # For backward compatibility:
