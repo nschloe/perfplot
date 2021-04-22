@@ -359,6 +359,7 @@ def live(
             lines.append(plotfun([], [], label=label)[0])
 
         ax.legend()
+        plt.ylabel("Runtime [s]")
         if xlabel:
             ax.set_xlabel(xlabel)
         xdata = []

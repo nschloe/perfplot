@@ -6,7 +6,7 @@ default:
 
 tag:
 	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
-	curl -H "Authorization: token `cat $(HOME)/.github-access-token`" -d '{"tag_name": "{{version}}"}' https://api.github.com/repos/nschloe/perfplot/releases
+	curl -H "Authorization: token `cat ~/.github-access-token`" -d '{"tag_name": "{{version}}"}' https://api.github.com/repos/nschloe/perfplot/releases
 
 upload: clean
 	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
