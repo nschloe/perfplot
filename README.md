@@ -100,7 +100,7 @@ to install.
 
 To run the perfplot unit tests, check out this repository and type
 ```
-pytest
+tox
 ```
 
 ### License
