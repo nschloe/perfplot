@@ -112,9 +112,7 @@ class PerfplotData:
                 ylabel = f"Runtime\nrelative to {self.labels[relative_to]}"
 
             # plt.title(ylabel)
-            ylabel = plt.ylabel(ylabel, ha="center", ma="left")
-            plt.gca().yaxis.set_label_coords(-0.1, 1.0)
-            ylabel.set_rotation(0)
+            dufte.ylabel(ylabel)
 
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
