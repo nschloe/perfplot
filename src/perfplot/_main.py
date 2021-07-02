@@ -4,17 +4,17 @@ import timeit
 from typing import Callable, List, Optional, Union
 
 import dufte
-import matplotlib
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
 from ._exceptions import PerfplotError
 
-matplotlib.style.use(dufte.style)
+plt.style.use(dufte.style)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
@@ -195,7 +195,10 @@ class Bench:
         n = self.n_range[self.idx]
         self.idx += 1
 
-        data = self.setup(n)
+        data = None
+        if callable(self.setup):
+            data = self.setup(n)
+
         reference = None
         timings = []
         for k, kernel in enumerate(self.kernels):
@@ -205,12 +208,15 @@ class Bench:
                     self.callback()
                 continue
 
-            # First let the function run one time. The value is used for the
-            # equality_check and the time for gauging how many more repetitions are to
-            # be done. If the initial time doesn't exceed the target time, append as
-            # many repetitions as the first measurement suggests. If the kernel is fast,
-            # the measurement with one repetition only can be somewhat off, but most of
-            # the time it's good enough.
+            if isinstance(self.setup, list):
+                data = self.setup[k](n)
+
+            # First let the function run once. The value is used for the equality_check
+            # and the time for gauging how many more repetitions are to be done. If the
+            # initial time doesn't exceed the target time, append as many repetitions as
+            # the first measurement suggests. If the kernel is fast, the measurement
+            # with one repetition only can be somewhat off, but most of the time it's
+            # good enough.
             t0_ns = time.time_ns()
             val = kernel(data)
             t1_ns = time.time_ns()
@@ -300,7 +306,7 @@ def _b(data, kernel: Callable, repeat: int):
 def live(
     setup: Callable,
     kernels: List[Callable],
-    n_range: List[int],
+    n_range: npt.ArrayLike,
     labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
     target_time_per_measurement: float = 1.0,
@@ -415,9 +421,9 @@ def live(
 
 
 def bench(
-    setup: Callable,
     kernels: List[Callable],
     n_range: List[int],
+    setup: Optional[Callable] = None,
     flops: Optional[Callable] = None,
     labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
@@ -438,7 +444,6 @@ def bench(
     task2 = None
 
     # inner iterator
-
     with Progress() as progress:
         try:
             if show_progress:
@@ -447,6 +452,7 @@ def bench(
 
             def callback():
                 if show_progress:
+                    assert task2 is not None
                     progress.update(task2, advance=1)
 
             b = Bench(
@@ -465,6 +471,8 @@ def bench(
                 timings_s[i] = next(b)
 
                 if show_progress:
+                    assert task1 is not None
+                    assert task2 is not None
                     progress.update(task1, advance=1)
                     progress.reset(task2)
 
