@@ -6,3 +6,4 @@ build/
 *.png
 .pytest_cache/
 .coverage
+.tox/

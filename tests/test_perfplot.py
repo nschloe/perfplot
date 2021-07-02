@@ -113,3 +113,12 @@ def test_flops():
         xlabel="len(a)",
         flops=lambda n: n,
     )
+
+
+def test_no_setup():
+    perfplot.show(kernels=[], n_range=r)
+
+
+def test_n_setups():
+    setups = [np.random.rand] * len(kernels)
+    perfplot.show(setup=setups, kernels=kernels, n_range=r)
