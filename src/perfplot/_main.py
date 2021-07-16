@@ -111,11 +111,10 @@ class PerfplotData:
                 scaled_timings = self.timings_s / self.timings_s[relative_to]
                 ylabel = f"Runtime\nrelative to {self.labels[relative_to]}"
 
-            # plt.title(ylabel)
-            dufte.ylabel(ylabel)
-
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
+
+            dufte.ylabel(ylabel)
         else:
             if relative_to is None:
                 flops = self.flop / self.timings_s
@@ -363,7 +362,7 @@ def live(
             lines.append(plotfun([], [], label=label)[0])
 
         ax.legend()
-        plt.ylabel("Runtime [s]")
+        dufte.ylabel("Runtime [s]")
         if xlabel:
             ax.set_xlabel(xlabel)
         xdata = []
