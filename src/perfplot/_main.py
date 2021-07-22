@@ -74,10 +74,10 @@ class PerfplotData:
                 logx = False
             else:
                 log_n_range = np.log(self.n_range)
-                diff = log_n_range - np.linspace(
-                    log_n_range[0], log_n_range[-1], len(log_n_range)
-                )
-                logx = np.all(np.abs(diff) < 1.0e-5)
+                linlog = np.linspace(log_n_range[0], log_n_range[-1], len(log_n_range))
+                # don't consider first and last, they are equal anyway
+                rel_diff = (log_n_range - linlog)[1:-1] / log_n_range[1:-1]
+                logx = np.all(np.abs(rel_diff) <= 0.1)
 
         if logy == "auto":
             if relative_to is not None:
@@ -175,7 +175,13 @@ class Bench:
         self.setup = setup
         self.kernels = kernels
         self.equality_check = equality_check
-        self.n_range = n_range
+        # Make n_range a list of "scalar" np.arrays. This makes it possible for the
+        # setup function to override the value with
+        # n[...] = something_else.
+        # That is useful if you want to plot the graphs against something else than the
+        # input n.
+        assert len(np.asarray(n_range).shape) == 1
+        self.n_range = [np.array(item) for item in n_range]
         self.target_time_per_measurement = target_time_per_measurement
         self.max_time = max_time
         self.labels = labels
@@ -318,11 +324,13 @@ def live(
     if labels is None:
         labels = [k.__name__ for k in kernels]
 
-    n_range = np.asarray(n_range)
+    # for data type of n_range, see above
+    assert len(np.asarray(n_range).shape) == 1
+    n_range = [np.array(item) for item in n_range]
 
     if logx == "auto":
         # Check if the x values are approximately equally spaced in log
-        if np.any(n_range <= 0):
+        if any(n <= 0 for n in n_range):
             logx = False
         else:
             log_n_range = np.log(n_range)
@@ -468,6 +476,8 @@ def bench(
 
             for i in range(len(n_range)):
                 timings_s[i] = next(b)
+                # override n_rane in case it got overridden in next()
+                n_range = b.n_range
 
                 if show_progress:
                     assert task1 is not None
