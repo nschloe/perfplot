@@ -41,8 +41,12 @@ def test2():
 
 
 def test3():
+    def setup(n):
+        assert isinstance(n, int)
+        return np.random.rand(n)
+
     perfplot.show(
-        setup=np.random.rand,
+        setup=setup,
         kernels=kernels,
         labels=["c_"],
         n_range=r,
@@ -95,7 +99,9 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
 
     # Regular Expression that retrieves the plot unit from label
     unit_re = re.compile(r"\[([musn]?[s])\]")
-    plot_unit = unit_re.search(ax.get_ylabel()).groups()[0]
+    m = unit_re.search(ax.get_ylabel())
+    assert m is not None
+    plot_unit = m.groups()[0]
     assert plot_unit == exp_unit
 
 

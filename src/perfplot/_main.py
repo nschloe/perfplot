@@ -1,7 +1,7 @@
 import io
 import time
 import timeit
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Literal, Optional, Union
 
 import dufte
 import matplotlib.animation as animation
@@ -514,8 +514,8 @@ def show(
     *args,
     time_unit: str = "s",
     relative_to: Optional[int] = None,
-    logx: str = "auto",
-    logy: str = "auto",
+    logx: Union[bool, Literal["auto"]] = "auto",
+    logy: Union[bool, Literal["auto"]] = "auto",
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -532,8 +532,8 @@ def save(
     transparent=True,
     *args,
     time_unit: str = "s",
-    logx: str = "auto",
-    logy: str = "auto",
+    logx: Union[bool, Literal["auto"]] = "auto",
+    logy: Union[bool, Literal["auto"]] = "auto",
     relative_to: Optional[int] = None,
     **kwargs,
 ):
