@@ -430,7 +430,7 @@ def live(
 def bench(
     kernels: List[Callable],
     n_range: List[int],
-    setup: Optional[Callable] = None,
+    setup: Optional[Union[Callable, List[Callable]]] = None,
     flops: Optional[Callable] = None,
     labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,

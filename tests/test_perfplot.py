@@ -7,7 +7,7 @@ kernels = [lambda a: np.c_[a, a]]
 r = [2 ** k for k in range(4)]
 
 
-def test():
+def test0():
     perfplot.show(
         setup=np.random.rand,
         kernels=kernels,
@@ -16,6 +16,8 @@ def test():
         xlabel="len(a)",
     )
 
+
+def test1():
     perfplot.show(
         setup=np.random.rand,
         kernels=kernels,
@@ -26,6 +28,8 @@ def test():
         logy=False,
     )
 
+
+def test2():
     out = perfplot.bench(
         setup=np.random.rand,
         kernels=kernels,
@@ -35,6 +39,8 @@ def test():
     )
     print(out)
 
+
+def test3():
     perfplot.show(
         setup=np.random.rand,
         kernels=kernels,
