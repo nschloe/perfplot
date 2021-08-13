@@ -1,7 +1,7 @@
 import io
 import time
 import timeit
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Literal, Optional, Union
 
 import dufte
 import matplotlib.animation as animation
@@ -197,7 +197,10 @@ class Bench:
         if self.idx >= len(self.n_range):
             raise StopIteration
 
-        n = self.n_range[self.idx]
+        # Explicitly convert to Python int. One difference between a numpy.array(int)
+        # and a native Python int are in expressions like `n * [2.0]`.
+        n = int(self.n_range[self.idx])
+
         self.idx += 1
 
         data = None
@@ -430,7 +433,7 @@ def live(
 def bench(
     kernels: List[Callable],
     n_range: List[int],
-    setup: Optional[Callable] = None,
+    setup: Optional[Union[Callable, List[Callable]]] = None,
     flops: Optional[Callable] = None,
     labels: Optional[List[str]] = None,
     xlabel: Optional[str] = None,
@@ -514,8 +517,8 @@ def show(
     *args,
     time_unit: str = "s",
     relative_to: Optional[int] = None,
-    logx: str = "auto",
-    logy: str = "auto",
+    logx: Union[bool, Literal["auto"]] = "auto",
+    logy: Union[bool, Literal["auto"]] = "auto",
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -532,8 +535,8 @@ def save(
     transparent=True,
     *args,
     time_unit: str = "s",
-    logx: str = "auto",
-    logy: str = "auto",
+    logx: Union[bool, Literal["auto"]] = "auto",
+    logy: Union[bool, Literal["auto"]] = "auto",
     relative_to: Optional[int] = None,
     **kwargs,
 ):
