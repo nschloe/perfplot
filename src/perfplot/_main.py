@@ -197,7 +197,10 @@ class Bench:
         if self.idx >= len(self.n_range):
             raise StopIteration
 
-        n = self.n_range[self.idx]
+        # Explicitly convert to Python int. One difference between a numpy.array(int)
+        # and a native Python int are in expressions like `n * [2.0]`.
+        n = int(self.n_range[self.idx])
+
         self.idx += 1
 
         data = None
