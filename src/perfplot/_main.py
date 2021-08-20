@@ -1,7 +1,13 @@
+from typing import Callable, List, Optional, Union
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 import io
 import time
 import timeit
-from typing import Callable, List, Literal, Optional, Union
 
 import dufte
 import matplotlib.animation as animation
