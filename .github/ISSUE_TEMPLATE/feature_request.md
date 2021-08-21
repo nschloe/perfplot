@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: "[REQUEST]"
 labels: Needs triage
-assignees: ''
+assignees: ""
 ---
 
 Consider posting in https://github.com/nschloe/perfplot/discussions for feedback before raising a feature request.

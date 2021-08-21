@@ -19,6 +19,7 @@ testing snippets with input parameters (e.g., the size of an array) and plotting
 results.
 
 For example, to compare different NumPy array concatenation methods, the script
+
 ```python
 import numpy as np
 import perfplot
@@ -47,29 +48,35 @@ perfplot.show(
     # flops=lambda n: 3*n,  # FLOPS plots
 )
 ```
+
 produces
 
-![](https://nschloe.github.io/perfplot/concat.svg) | ![](https://nschloe.github.io/perfplot/relative.svg)
-| --- | --- |
+| ![](https://nschloe.github.io/perfplot/concat.svg) | ![](https://nschloe.github.io/perfplot/relative.svg) |
+| -------------------------------------------------- | ---------------------------------------------------- |
 
 Clearly, `stack` and `vstack` are the best options for large arrays.
 
 (By default, perfplot asserts the equality of the output of all snippets, too.)
 
 If your plot takes a while to generate, you can also use
+
 <!--pytest-codeblocks:skip-->
+
 ```python
 perfplot.live(
     # ...
 )
 ```
+
 <img alt="live" src="https://nschloe.github.io/perfplot/live.gif" width="40%">
 
 with the same arguments as above. It will plot the updates live.
 
 Benchmarking and plotting can be separated. This allows multiple plots of the same data,
 for example:
+
 <!--pytest-codeblocks:skip-->
+
 ```python
 out = perfplot.bench(
     # same arguments as above (except the plot-related ones, like time_unit or log*)
@@ -80,28 +87,32 @@ out.save("perf.png", transparent=True, bbox_inches="tight")
 
 Other examples:
 
-  * [Making a flat list out of list of lists in Python](https://stackoverflow.com/a/45323085/353337)
-  * [Most efficient way to map function over numpy array](https://stackoverflow.com/a/46470401/353337)
-  * [numpy: most efficient frequency counts for unique values in an array](https://stackoverflow.com/a/43096495/353337)
-  * [Most efficient way to reverse a numpy array](https://stackoverflow.com/a/44921013/353337)
-  * [How to add an extra column to an numpy array](https://stackoverflow.com/a/40218298/353337)
-  * [Initializing numpy matrix to something other than zero or one](https://stackoverflow.com/a/45006691/353337)
+- [Making a flat list out of list of lists in Python](https://stackoverflow.com/a/45323085/353337)
+- [Most efficient way to map function over numpy array](https://stackoverflow.com/a/46470401/353337)
+- [numpy: most efficient frequency counts for unique values in an array](https://stackoverflow.com/a/43096495/353337)
+- [Most efficient way to reverse a numpy array](https://stackoverflow.com/a/44921013/353337)
+- [How to add an extra column to an numpy array](https://stackoverflow.com/a/40218298/353337)
+- [Initializing numpy matrix to something other than zero or one](https://stackoverflow.com/a/45006691/353337)
 
 ### Installation
 
 perfplot is [available from the Python Package
 Index](https://pypi.org/project/perfplot/), so simply do
+
 ```
 pip install perfplot
 ```
+
 to install.
 
 ### Testing
 
 To run the perfplot unit tests, check out this repository and type
+
 ```
 tox
 ```
 
 ### License
+
 This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).

@@ -14,6 +14,7 @@ A minimal code example that reproduces the problem would be a big help if you ca
 
 **Diagnose**
 I may ask you to cut and paste the output of the following command.
+
 ```
 pip freeze | grep perfplot
 ```
