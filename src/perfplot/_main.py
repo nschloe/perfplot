@@ -229,12 +229,16 @@ class Bench:
             # and the time for gauging how many more repetitions are to be done. If the
             # initial time doesn't exceed the target time, append as many repetitions as
             # the first measurement suggests. If the kernel is fast, the measurement
-            # with one repetition only can be somewhat off, but most of the time it's
-            # good enough.
+            # with one repetition only can be somewhat off because the CPU needs to spin
+            # up first. The actual times are only reached after a few hundred
+            # nanoseconds of computation. Most of the time it's okay though.
             t0_ns = time.time_ns()
             val = kernel(data)
             t1_ns = time.time_ns()
             t_ns = t1_ns - t0_ns
+
+            if t_ns == 0:
+                raise RuntimeError("Measured 0 ns for a function call. Try again?")
 
             if self.equality_check:
                 if k == 0:
