@@ -232,9 +232,9 @@ class Bench:
             # with one repetition only can be somewhat off because the CPU needs to spin
             # up first. The actual times are only reached after a few hundred
             # nanoseconds of computation. Most of the time it's okay though.
-            t0_ns = time.time_ns()
+            t0_ns = time.perf_counter_ns()
             val = kernel(data)
-            t1_ns = time.time_ns()
+            t1_ns = time.perf_counter_ns()
             t_ns = t1_ns - t0_ns
 
             if t_ns == 0:
