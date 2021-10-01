@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import io
 import time
 import timeit
-from typing import Callable, List, Optional, Union
+from typing import Callable
 
 try:
     # Python 3.8+
@@ -55,11 +57,11 @@ def _auto_time_unit(time_s: float) -> str:
 class PerfplotData:
     def __init__(
         self,
-        n_range: List[int],
+        n_range: list[int],
         timings_s,
         flop,
-        labels: List[str],
-        xlabel: Optional[str],
+        labels: list[str],
+        xlabel: str | None,
     ):
         self.n_range = np.asarray(n_range)
         self.timings_s = timings_s
@@ -70,9 +72,9 @@ class PerfplotData:
     def plot(  # noqa: C901
         self,
         time_unit: str = "s",
-        relative_to: Optional[int] = None,
-        logx: Union[str, bool] = "auto",
-        logy: Union[str, bool] = "auto",
+        relative_to: int | None = None,
+        logx: str | bool = "auto",
+        logy: str | bool = "auto",
     ):
         if logx == "auto":
             # Check if the x values are approximately equally spaced in log
@@ -232,9 +234,9 @@ class Bench:
             # with one repetition only can be somewhat off because the CPU needs to spin
             # up first. The actual times are only reached after a few hundred
             # nanoseconds of computation. Most of the time it's okay though.
-            t0_ns = time.time_ns()
+            t0_ns = time.perf_counter_ns()
             val = kernel(data)
-            t1_ns = time.time_ns()
+            t1_ns = time.perf_counter_ns()
             t_ns = t1_ns - t0_ns
 
             if t_ns == 0:
@@ -323,16 +325,16 @@ def _b(data, kernel: Callable, repeat: int):
 
 def live(
     setup: Callable,
-    kernels: List[Callable],
+    kernels: list[Callable],
     n_range: npt.ArrayLike,
-    labels: Optional[List[str]] = None,
-    xlabel: Optional[str] = None,
+    labels: list[str] | None = None,
+    xlabel: str | None = None,
     target_time_per_measurement: float = 1.0,
-    max_time: Optional[float] = None,
-    equality_check: Optional[Callable] = np.allclose,
+    max_time: float | None = None,
+    equality_check: Callable | None = np.allclose,
     show_progress: bool = True,
-    logx: Union[str, bool] = "auto",
-    logy: Union[str, bool] = "auto",
+    logx: Literal["auto"] | bool = "auto",
+    logy: Literal["auto"] | bool = "auto",
 ):
     if labels is None:
         labels = [k.__name__ for k in kernels]
@@ -441,15 +443,15 @@ def live(
 
 
 def bench(
-    kernels: List[Callable],
-    n_range: List[int],
-    setup: Optional[Union[Callable, List[Callable]]] = None,
-    flops: Optional[Callable] = None,
-    labels: Optional[List[str]] = None,
-    xlabel: Optional[str] = None,
+    kernels: list[Callable],
+    n_range: list[int],
+    setup: Callable | list[Callable] | None = None,
+    flops: Callable | None = None,
+    labels: list[str] | None = None,
+    xlabel: str | None = None,
     target_time_per_measurement: float = 1.0,
-    max_time: Optional[float] = None,
-    equality_check: Optional[Callable] = np.allclose,
+    max_time: float | None = None,
+    equality_check: Callable | None = np.allclose,
     show_progress: bool = True,
 ):
     if labels is None:
@@ -509,9 +511,9 @@ def bench(
 def plot(
     *args,
     time_unit: str = "s",
-    logx: Union[str, bool] = "auto",
-    logy: Union[str, bool] = "auto",
-    relative_to: Optional[int] = None,
+    logx: Literal["auto"] | bool = "auto",
+    logy: Literal["auto"] | bool = "auto",
+    relative_to: int | None = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -526,9 +528,9 @@ def plot(
 def show(
     *args,
     time_unit: str = "s",
-    relative_to: Optional[int] = None,
-    logx: Union[bool, Literal["auto"]] = "auto",
-    logy: Union[bool, Literal["auto"]] = "auto",
+    relative_to: int | None = None,
+    logx: bool | Literal["auto"] = "auto",
+    logy: bool | Literal["auto"] = "auto",
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -545,9 +547,9 @@ def save(
     transparent=True,
     *args,
     time_unit: str = "s",
-    logx: Union[bool, Literal["auto"]] = "auto",
-    logy: Union[bool, Literal["auto"]] = "auto",
-    relative_to: Optional[int] = None,
+    logx: bool | Literal["auto"] = "auto",
+    logy: bool | Literal["auto"] = "auto",
+    relative_to: int | None = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
