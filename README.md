@@ -5,7 +5,8 @@
 [![PyPi Version](https://img.shields.io/pypi/v/perfplot.svg?style=flat-square)](https://pypi.org/project/perfplot)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/perfplot.svg?style=flat-square)](https://pypi.org/pypi/perfplot/)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/perfplot.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/perfplot)
-[![PyPi downloads](https://img.shields.io/pypi/dm/perfplot.svg?style=flat-square)](https://pypistats.org/packages/perfplot)
+[![Downloads](https://pepy.tech/badge/perfplot/month)](https://pepy.tech/project/perfplot)
+<!--[![PyPi downloads](https://img.shields.io/pypi/dm/perfplot.svg?style=flat-square)](https://pypistats.org/packages/perfplot)-->
 
 [![Discord](https://img.shields.io/static/v1?logo=discord&label=chat&message=on%20discord&color=7289da&style=flat-square)](https://discord.gg/hnTJ5MRX2Y)
 

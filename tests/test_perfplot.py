@@ -66,9 +66,9 @@ def test_no_labels():
     [
         # Dealing w/ edge-case when timing < nanosecond
         # ("ns", 0.125, "auto"),
-        # Almost a milisecond
+        # Almost a millisecond
         ("us", 9.999e5, "auto"),
-        # Equal exactly to a milisecond
+        # Equal exactly to a millisecond
         ("ms", 1e6, "auto"),
         # Over 1 second
         ("s", 1.5e9, "auto"),

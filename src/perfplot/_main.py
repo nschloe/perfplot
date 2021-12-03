@@ -11,9 +11,9 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-import dufte
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+import matplotx
 import numpy as np
 import numpy.typing as npt
 from rich.console import Console
@@ -22,12 +22,12 @@ from rich.table import Table
 
 from ._exceptions import PerfplotError
 
-plt.style.use(dufte.style)
+plt.style.use(matplotx.styles.dufte)
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
     "s": 1e0,  # second
-    "ms": 1e-3,  # milisecond
+    "ms": 1e-3,  # millisecond
     "us": 1e-6,  # microsecond
     "ns": 1e-9,  # nanosecond
 }
@@ -37,7 +37,7 @@ def _auto_time_unit(time_s: float) -> str:
     """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
     execution time into SI second and iterating over the plausible SI time units (s, ms,
-    us, ns) to find the first one whos magnitude is smaller than the minimum execution
+    us, ns) to find the first one whose magnitude is smaller than the minimum execution
     time.
 
     :rtype: str
@@ -122,7 +122,7 @@ class PerfplotData:
             for t, label in zip(scaled_timings, self.labels):
                 plotfun(self.n_range, t, label=label)
 
-            dufte.ylabel(ylabel)
+            matplotx.ylabel_top(ylabel)
         else:
             if relative_to is None:
                 flops = self.flop / self.timings_s
@@ -139,7 +139,7 @@ class PerfplotData:
         if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
 
-        dufte.legend()
+        matplotx.line_labels()
 
     def show(self, **kwargs):
         self.plot(**kwargs)
@@ -318,8 +318,8 @@ def _b(data, kernel: Callable, repeat: int):
         number = int(factor * number) + 1
 
     assert tm is not None
-    # Only return the minimum time; everthing else just measures how slow the system can
-    # go.
+    # Only return the minimum time; everything else just measures how slow the system
+    # can go.
     return np.min(tm)
 
 
@@ -385,7 +385,7 @@ def live(
             lines.append(plotfun([], [], label=label)[0])
 
         ax.legend()
-        dufte.ylabel("Runtime [s]")
+        matplotx.ylabel_top("Runtime [s]")
         if xlabel:
             ax.set_xlabel(xlabel)
         xdata = []
