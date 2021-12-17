@@ -22,7 +22,7 @@ from rich.table import Table
 
 from ._exceptions import PerfplotError
 
-plt.style.use(matplotx.styles.dufte)
+plt.style.use(matplotx.styles.duftify(matplotx.styles.tab20r))
 
 # Orders of Magnitude for SI time units in {unit: magnitude} format
 si_time = {
