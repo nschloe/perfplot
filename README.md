@@ -22,8 +22,6 @@ results.
 
 For example, to compare different NumPy array concatenation methods, the script
 
-<!--pytest-codeblocks:skipif(sys.version_info <= (3, 10))-->
-
 ```python
 import numpy as np
 import perfplot
@@ -79,7 +77,7 @@ with the same arguments as above. It will plot the updates live.
 Benchmarking and plotting can be separated. This allows multiple plots of the same data,
 for example:
 
-<!--pytest-codeblocks:skipif(sys.version_info <= (3, 9))-->
+<!--pytest-codeblocks:skip-->
 
 ```python
 out = perfplot.bench(
