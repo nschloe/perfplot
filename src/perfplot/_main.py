@@ -62,12 +62,14 @@ class PerfplotData:
         flop,
         labels: list[str],
         xlabel: str | None,
+        title: str | None,
     ):
         self.n_range = np.asarray(n_range)
         self.timings_s = timings_s
         self.flop = flop
         self.labels = labels
         self.xlabel = xlabel
+        self.title = title
 
     def plot(  # noqa: C901
         self,
@@ -136,6 +138,8 @@ class PerfplotData:
 
         if self.xlabel:
             plt.xlabel(self.xlabel)
+        if self.title:
+            plt.title(self.title)
         if relative_to is not None and not logy:
             plt.gca().set_ylim(bottom=0)
 
@@ -257,7 +261,10 @@ class Bench:
                         if not is_equal:
                             raise PerfplotError(
                                 "Equality check failure. "
-                                + f"({self.labels[0]}, {self.labels[k]})"
+                                + f"{self.labels[0]}:\n"
+                                + f"{reference}:\n\n"
+                                + f"{self.labels[k]}:\n"
+                                + f"{val}:\n"
                             )
 
             # First try with one repetition only.
@@ -449,6 +456,7 @@ def bench(
     flops: Callable | None = None,
     labels: list[str] | None = None,
     xlabel: str | None = None,
+    title: str | None = None,
     target_time_per_measurement: float = 1.0,
     max_time: float | None = None,
     equality_check: Callable | None = np.allclose,
@@ -504,7 +512,7 @@ def bench(
             timings_s = timings_s[:i]
             n_range = n_range[:i]
 
-    return PerfplotData(n_range, timings_s.T, flop, labels, xlabel)
+    return PerfplotData(n_range, timings_s.T, flop, labels, xlabel, title)
 
 
 # For backward compatibility:
