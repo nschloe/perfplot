@@ -91,6 +91,7 @@ def test_automatic_scale(exp_unit, time_ns, time_unit):
         timings_s=timings,
         labels=["."],  # Suppress no handle error # TODO fix this
         xlabel="",
+        title="",
         flop=None,
     )
     # Has the correct unit been applied to the y_label?
