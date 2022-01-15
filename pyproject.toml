@@ -1,3 +1,39 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "perfplot"
+authors = [{name = "Nico Schlömer", email = "nico.schloemer@gmail.com"}]
+description = "Performance plots for Python code snippets"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Software Development",
+  "Topic :: Utilities",
+]
+keywords = ["performance", "profile"]
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+  "matplotlib",
+  "matplotx",
+  "numpy",
+  "rich",
+  "typing_extensions;python_version<'3.8'",
+]
+
+[project.urls]
+Code = "https://github.com/nschloe/perfplot"
+Issues = "https://github.com/nschloe/perfplot/issues"
+Funding = "https://github.com/sponsors/nschloe"
