@@ -218,6 +218,8 @@ class Bench:
         data = None
         if callable(self.setup):
             data = self.setup(n)
+            if not isinstance(data, tuple):
+                data = (data,)
 
         reference = None
         timings = []
@@ -239,7 +241,7 @@ class Bench:
             # up first. The actual times are only reached after a few hundred
             # nanoseconds of computation. Most of the time it's okay though.
             t0_ns = time.perf_counter_ns()
-            val = kernel(data)
+            val = kernel(*data)
             t1_ns = time.perf_counter_ns()
             t_ns = t1_ns - t0_ns
 
@@ -298,7 +300,7 @@ def _b(data, kernel: Callable, repeat: int):
     while min_timing_ns <= required_timing_ns:
         tm = np.array(
             timeit.repeat(
-                stmt=lambda: kernel(data),
+                stmt=lambda: kernel(*data),
                 repeat=repeat,
                 number=number,
                 timer=time.perf_counter_ns,
