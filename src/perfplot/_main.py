@@ -232,6 +232,8 @@ class Bench:
 
             if isinstance(self.setup, list):
                 data = self.setup[k](n)
+                if not isinstance(data, tuple):
+                    data = (data,)
 
             # First let the function run once. The value is used for the equality_check
             # and the time for gauging how many more repetitions are to be done. If the
