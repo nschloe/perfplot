@@ -255,7 +255,16 @@ class Bench:
                     reference = val
                 else:
                     try:
-                        is_equal = self.equality_check(reference, val)
+                        if isinstance(reference, tuple):
+                            assert isinstance(val, tuple)
+                            assert len(reference) == len(val)
+                            is_equal = True
+                            for r, v in zip(reference, val):
+                                if not self.equality_check(r, v):
+                                    is_equal = False
+                                    break
+                        else:
+                            is_equal = self.equality_check(reference, val)
                     except TypeError:
                         raise PerfplotError(
                             "Error in equality_check. "
@@ -264,7 +273,7 @@ class Bench:
                     else:
                         if not is_equal:
                             raise PerfplotError(
-                                "Equality check failure. "
+                                "Equality check failure.\n"
                                 + f"{self.labels[0]}:\n"
                                 + f"{reference}:\n\n"
                                 + f"{self.labels[k]}:\n"

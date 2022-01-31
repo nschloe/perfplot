@@ -4,7 +4,7 @@ import pytest
 import perfplot
 
 kernels = [lambda a: np.c_[a, a]]
-r = [2 ** k for k in range(4)]
+r = [2**k for k in range(4)]
 
 
 def test0():
@@ -135,3 +135,18 @@ def test_no_setup():
 def test_n_setups():
     setups = [np.random.rand] * len(kernels)
     perfplot.show(setup=setups, kernels=kernels, n_range=r)
+
+
+def test_return_tuples():
+    def setup(n):
+        return np.ones(n), np.full(n + 2, 3.1)
+
+    def times(a, b):
+        return 2 * a, 3 * b
+
+    def times_reversed(a, b):
+        return a * 2, b * 3
+
+    perfplot.show(
+        setup=setup, kernels=[times, times_reversed], n_range=[2**k for k in range(3)]
+    )
