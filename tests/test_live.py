@@ -5,7 +5,7 @@ import perfplot
 
 def test_live():
     kernels = [lambda a: np.c_[a, a]]
-    r = [2 ** k for k in range(4)]
+    r = [2**k for k in range(4)]
 
     perfplot.live(
         setup=np.random.rand,

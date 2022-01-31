@@ -36,7 +36,7 @@ perfplot.show(
         lambda a: np.concatenate([a[:, None], a[:, None]], axis=1),
     ],
     labels=["c_", "stack", "vstack", "column_stack", "concat"],
-    n_range=[2 ** k for k in range(25)],
+    n_range=[2**k for k in range(25)],
     xlabel="len(a)",
     # More optional arguments with their default values:
     # logx="auto",  # set to True or False to force scaling

@@ -4,7 +4,7 @@ import pytest
 import perfplot
 
 kernels = [lambda a: np.c_[a, a]]
-r = [2 ** k for k in range(4)]
+r = [2**k for k in range(4)]
 
 
 def test0():
