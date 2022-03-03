@@ -33,6 +33,13 @@ si_time = {
 }
 
 
+def default_equality_check(a, b):
+    if isinstance(a, str):
+        return a == b
+
+    return np.allclose(a, b)
+
+
 def _auto_time_unit(time_s: float) -> str:
     """Automatically obtains a readable unit at which to plot :py:attr:`timings` of the
     benchmarking process. This is accomplished by converting the minimum measured
@@ -351,7 +358,7 @@ def live(
     xlabel: str | None = None,
     target_time_per_measurement: float = 1.0,
     max_time: float | None = None,
-    equality_check: Callable | None = np.allclose,
+    equality_check: Callable | None = default_equality_check,
     show_progress: bool = True,
     logx: Literal["auto"] | bool = "auto",
     logy: Literal["auto"] | bool = "auto",
@@ -472,7 +479,7 @@ def bench(
     title: str | None = None,
     target_time_per_measurement: float = 1.0,
     max_time: float | None = None,
-    equality_check: Callable | None = np.allclose,
+    equality_check: Callable | None = default_equality_check,
     show_progress: bool = True,
 ):
     if labels is None:
