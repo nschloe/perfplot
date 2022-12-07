@@ -105,6 +105,10 @@ Index](https://pypi.org/project/perfplot/), so simply do
 pip install perfplot
 ```
 
+or 
+``` 
+conda install -c conda-forge perfplot
+```
 to install.
 
 ### Testing
