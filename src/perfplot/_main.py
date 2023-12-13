@@ -258,7 +258,7 @@ class Bench:
                 raise RuntimeError("Measured 0 ns for a function call. Try again?")
 
             if self.equality_check:
-                if k == 0:
+                if reference is None:
                     reference = val
                 else:
                     try:
@@ -519,7 +519,7 @@ def bench(
 
             for i in range(len(n_range)):
                 timings_s[i] = next(b)
-                # override n_rane in case it got overridden in next()
+                # override n_range in case it got overridden in next()
                 n_range = b.n_range
 
                 if show_progress:
@@ -539,17 +539,17 @@ def bench(
 def plot(
     *args,
     time_unit: str = "s",
+    relative_to: int | None = None,
     logx: Literal["auto"] | bool = "auto",
     logy: Literal["auto"] | bool = "auto",
-    relative_to: int | None = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
     out.plot(
         time_unit=time_unit,
+        relative_to=relative_to,
         logx=logx,
         logy=logy,
-        relative_to=relative_to,
     )
 
 
@@ -575,9 +575,9 @@ def save(
     transparent=True,
     *args,
     time_unit: str = "s",
+    relative_to: int | None = None,
     logx: bool | Literal["auto"] = "auto",
     logy: bool | Literal["auto"] = "auto",
-    relative_to: int | None = None,
     **kwargs,
 ):
     out = bench(*args, **kwargs)
@@ -585,7 +585,7 @@ def save(
         filename,
         transparent,
         time_unit=time_unit,
+        relative_to=relative_to,
         logx=logx,
         logy=logy,
-        relative_to=relative_to,
     )
