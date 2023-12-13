@@ -150,3 +150,24 @@ def test_return_tuples():
     perfplot.show(
         setup=setup, kernels=[times, times_reversed], n_range=[2**k for k in range(3)]
     )
+
+
+def test_exceed_time():
+    """other functions should be checked for validity even if the first timed out"""
+    import time
+    def setup(n):
+        return np.random.rand(n)
+
+    def exceed_time(a):
+        time.sleep(0.5)
+        return 1
+
+    def in_time(a):
+        return 1
+
+    def in_time2(a):
+        return 1
+
+    b = perfplot.bench(
+        setup=setup, kernels=[exceed_time, in_time, in_time2], n_range=[2**k for k in range(3)], max_time=0.1
+    )
