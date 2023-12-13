@@ -258,7 +258,7 @@ class Bench:
                 raise RuntimeError("Measured 0 ns for a function call. Try again?")
 
             if self.equality_check:
-                if k == 0:
+                if reference is None:
                     reference = val
                 else:
                     try:
